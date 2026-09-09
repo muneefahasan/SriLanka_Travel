@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,600;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+@theme {
+  /* Editorial Slate-Green & Light Green Palette */
+  --color-ceylon-bg: #F0F4F1;
+  --color-ceylon-card: #E2ECE5;
+  --color-ceylon-slate: #243335;
+  --color-ceylon-primary: #172D25;
+  --color-ceylon-accent: #1D6F47;
+  --color-ceylon-light: #34A86C;
+}
+
+body {
+  background-color: var(--color-ceylon-bg);
+  color: var(--color-ceylon-primary);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, serif;
+}

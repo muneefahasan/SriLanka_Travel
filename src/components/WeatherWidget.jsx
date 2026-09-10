@@ -49,7 +49,7 @@ export default function WeatherWidget() {
   const [selectedCity, setSelectedCity] = useState(weatherData[0]);
 
   return (
-    <div className="w-full bg-slate-900 py-20 px-6 text-white">
+    <div id="weather-widget" className="w-full bg-slate-900 py-20 px-6 text-white">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}

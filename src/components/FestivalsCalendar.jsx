@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Calendar, MapPin, Sparkles, Tag, Search, Filter } from 'lucide-react';
+import { Calendar, MapPin, Sparkles, Tag, Search, Filter, X, Clock, ShieldCheck } from 'lucide-react';
 
 export default function FestivalsCalendar() {
-  // Full 12-Month Sri Lanka Festivals Dataset
   const festivalsData = [
     {
       id: 1,
@@ -13,7 +12,10 @@ export default function FestivalsCalendar() {
       month: "January",
       image: "https://images.unsplash.com/photo-1544256662-756ef26e5fc5?auto=format&fit=crop&w=600&q=80",
       description: "Commemorating Buddha's first visit to Sri Lanka with a magnificent night perahera featuring traditional dancers and whip-crackers.",
-      highlight: "Night Cultural Procession"
+      highlight: "Night Cultural Procession",
+      timing: "8:00 PM - 11:30 PM",
+      dressCode: "White / Modest temple attire covering shoulders & knees",
+      tips: "Arrive 2 hours early to secure front-row seating along the procession route."
     },
     {
       id: 2,
@@ -24,7 +26,10 @@ export default function FestivalsCalendar() {
       month: "February",
       image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80",
       description: "Colombo's biggest cultural festival with hundreds of caparisoned elephants, traditional masked dancers, and torchbearers.",
-      highlight: "Gangaramaya Elephant Parade"
+      highlight: "Gangaramaya Elephant Parade",
+      timing: "7:00 PM - 10:30 PM",
+      dressCode: "Modest casual / traditional white",
+      tips: "Book tickets for reserved viewing stands around Beira Lake."
     },
     {
       id: 3,
@@ -35,7 +40,10 @@ export default function FestivalsCalendar() {
       month: "March",
       image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=600&q=80",
       description: "Night trek up the sacred mountain peak to witness the breathtaking shadow of the mountain at sunrise.",
-      highlight: "Sacred Sunrise Mountain Trek"
+      highlight: "Sacred Sunrise Mountain Trek",
+      timing: "Start night climb at 1:30 AM",
+      dressCode: "Warm layers, jacket & comfortable hiking shoes",
+      tips: "Carry warm clothes as the peak summit gets very cold before dawn."
     },
     {
       id: 4,
@@ -46,7 +54,10 @@ export default function FestivalsCalendar() {
       month: "April",
       image: "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&w=600&q=80",
       description: "National harvest festival marked by traditional games, boiling of auspicious milk, fireworks, and homemade sweetmeats.",
-      highlight: "Traditional Games & Feast"
+      highlight: "Traditional Games & Feast",
+      timing: "All Day Event",
+      dressCode: "Festive traditional wear",
+      tips: "Enjoy traditional sweets like Kavum, Kokis and participate in village games."
     },
     {
       id: 5,
@@ -57,32 +68,13 @@ export default function FestivalsCalendar() {
       month: "May",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
       description: "Festival of lights celebrating Buddha's birth and enlightenment with massive illuminated pandols and free food stalls (Dansalas).",
-      highlight: "Massive Light Pandols & Free Dansalas"
+      highlight: "Massive Light Pandols & Free Dansalas",
+      timing: "6:00 PM - Midnight",
+      dressCode: "White respectful clothing",
+      tips: "Walk through Bauddhaloka Mawatha in Colombo to see grand illuminated lanterns."
     },
     {
       id: 6,
-      title: "Poson Poya Festival",
-      location: "Mihintale & Anuradhapura",
-      dates: "June 21 - June 22, 2026",
-      category: "Cultural & Religious",
-      month: "June",
-      image: "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=600&q=80",
-      description: "Celebrating the arrival of Buddhism in Sri Lanka with white-clad pilgrims, paper lanterns, and illuminated Mihintale rock hill.",
-      highlight: "Mihintale Rock Illuminations"
-    },
-    {
-      id: 7,
-      title: "Arugam Bay Surf & Music Fest",
-      location: "Arugam Bay (East Coast)",
-      dates: "July 15 - July 18, 2026",
-      category: "Sports & Beach",
-      month: "July",
-      image: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=600&q=80",
-      description: "International surfing competition accompanied by live acoustic beach sessions, seafood barbecues, and sunset parties.",
-      highlight: "World Class Surfing & Beach Parties"
-    },
-    {
-      id: 8,
       title: "Kandy Esala Perahera",
       location: "Kandy (Temple of Sacred Tooth)",
       dates: "August 12 - August 22, 2026",
@@ -90,64 +82,23 @@ export default function FestivalsCalendar() {
       month: "August",
       image: "https://images.unsplash.com/photo-1544256662-756ef26e5fc5?auto=format&fit=crop&w=600&q=80",
       description: "Sri Lanka's grandest historic festival featuring majestic dressed elephants, fire-dancers, Kandyan drummers, and whip-crackers.",
-      highlight: "Sacred Tooth Relic Procession"
-    },
-    {
-      id: 9,
-      title: "Nallur Kandaswamy Kovil Festival",
-      location: "Jaffna",
-      dates: "August 05 - September 01, 2026",
-      category: "Cultural & Religious",
-      month: "September",
-      image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80",
-      description: "25-day vibrant Hindu festival in Jaffna filled with colorful chariot processions, traditional Nadaswaram music, and holy rituals.",
-      highlight: "Ther Chariot Procession"
-    },
-    {
-      id: 10,
-      title: "Deepavali (Festival of Lights)",
-      location: "Islandwide (Tamil Heritage Areas)",
-      dates: "October 20, 2026",
-      category: "National Celebration",
-      month: "October",
-      image: "https://images.unsplash.com/photo-1574991485647-758ea065963b?auto=format&fit=crop&w=600&q=80",
-      description: "Hindu festival celebrating the victory of light over darkness with oil lamps (Diyas), colorful Rangoli art, and traditional sweets.",
-      highlight: "Oil Lamp Illumination & Rangoli"
-    },
-    {
-      id: 11,
-      title: "Minneriya Elephant Gathering",
-      location: "Minneriya National Park",
-      dates: "November Season Peak",
-      category: "Sports & Nature",
-      month: "November",
-      image: "https://images.unsplash.com/photo-1544256662-756ef26e5fc5?auto=format&fit=crop&w=600&q=80",
-      description: "World famous natural wildlife phenomenon where over 300 Asian wild elephants gather around Minneriya tank reservoir.",
-      highlight: "Greatest Wild Elephant Gathering"
-    },
-    {
-      id: 12,
-      title: "Galle Fort Literary & Music Fest",
-      location: "Galle Dutch Fort",
-      dates: "December 28 - January 02, 2026",
-      category: "Sports & Beach",
-      month: "December",
-      image: "https://images.unsplash.com/photo-1574991485647-758ea065963b?auto=format&fit=crop&w=600&q=80",
-      description: "International arts, music, and literary gathering set inside the 17th century historic Galle Dutch Fort.",
-      highlight: "Heritage Fort Arts & Music"
+      highlight: "Sacred Tooth Relic Procession",
+      timing: "7:00 PM - 11:00 PM",
+      dressCode: "White or modest temple attire",
+      tips: "Pre-book seats along Kandy main street or temple entrance balcony."
     }
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeModalEvent, setActiveModalEvent] = useState(null);
 
   const monthsList = [
     "All", "January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // Multi-filter logic (Search + Category + All 12 Months)
   const filteredFestivals = festivalsData.filter(event => {
     const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
     const matchesMonth = selectedMonth === "All" || event.month === selectedMonth;
@@ -157,7 +108,7 @@ export default function FestivalsCalendar() {
   });
 
   return (
-    <div className="w-full bg-ceylon-bg py-20 px-6 border-t border-gray-200">
+    <div id="festivals-calendar" className="w-full bg-ceylon-bg py-20 px-6 border-t border-gray-200">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
@@ -201,7 +152,6 @@ export default function FestivalsCalendar() {
               <option value="All">🎭 All Event Categories</option>
               <option value="Cultural & Religious">🛕 Cultural & Religious</option>
               <option value="National Celebration">🎉 National Celebration</option>
-              <option value="Sports & Beach">🏄 Sports & Beach</option>
               <option value="Sports & Nature">🐘 Sports & Nature</option>
             </select>
             <Filter size={16} className="absolute right-4 top-4 text-gray-400 pointer-events-none" />
@@ -227,7 +177,7 @@ export default function FestivalsCalendar() {
         {/* Festival Cards Grid */}
         {filteredFestivals.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 text-gray-500 font-bold">
-            No festivals found matching your search criteria. Try resetting your dropdown filters!
+            No festivals found matching your search criteria.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -243,9 +193,6 @@ export default function FestivalsCalendar() {
                     />
                     <div className="absolute top-4 left-4 bg-ceylon-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">
                       {event.category}
-                    </div>
-                    <div className="absolute bottom-3 right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                      {event.month}
                     </div>
                   </div>
 
@@ -273,13 +220,64 @@ export default function FestivalsCalendar() {
                   <span className="text-xs font-bold text-ceylon-primary bg-orange-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
                     <Tag size={12} className="text-ceylon-accent" /> {event.highlight}
                   </span>
-                  <button className="text-ceylon-accent font-bold text-sm hover:underline cursor-pointer">
+                  <button 
+                    onClick={() => setActiveModalEvent(event)}
+                    className="bg-ceylon-primary hover:bg-ceylon-accent text-white font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm"
+                  >
                     View Details
                   </button>
                 </div>
 
               </div>
             ))}
+          </div>
+        )}
+
+        {/* MODAL: Interactive Festival Details */}
+        {activeModalEvent && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-8 max-w-xl w-full shadow-2xl relative overflow-hidden">
+              <button 
+                onClick={() => setActiveModalEvent(null)}
+                className="absolute top-6 right-6 z-10 text-white bg-black/50 p-2 rounded-full hover:bg-black/80 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="relative h-60 -mx-8 -mt-8 mb-6">
+                <img src={activeModalEvent.image} alt={activeModalEvent.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-6 text-white">
+                  <span className="bg-ceylon-accent text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full mb-2 inline-block">
+                    {activeModalEvent.category}
+                  </span>
+                  <h3 className="text-3xl font-black">{activeModalEvent.title}</h3>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-sm text-gray-700">
+                <p className="leading-relaxed text-base">{activeModalEvent.description}</p>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="p-3 bg-orange-50 rounded-xl">
+                    <span className="text-xs text-orange-600 font-bold block">Event Timing</span>
+                    <span className="font-bold text-gray-900 flex items-center gap-1"><Clock size={14} /> {activeModalEvent.timing}</span>
+                  </div>
+                  <div className="p-3 bg-emerald-50 rounded-xl">
+                    <span className="text-xs text-emerald-600 font-bold block">Location Venue</span>
+                    <span className="font-bold text-gray-900 flex items-center gap-1"><MapPin size={14} /> {activeModalEvent.location}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-gray-900">
+                    <ShieldCheck size={18} className="text-ceylon-accent" /> Visitor Guidelines & Dress Code:
+                  </div>
+                  <p className="text-xs text-gray-600">👗 <strong>Dress Code:</strong> {activeModalEvent.dressCode}</p>
+                  <p className="text-xs text-gray-600">💡 <strong>Travel Tip:</strong> {activeModalEvent.tips}</p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

@@ -63,7 +63,7 @@ export default function TouristTools() {
   ];
 
   return (
-    <div className="w-full bg-slate-900 py-20 px-6 text-white border-t border-slate-800">
+    <div id="tourist-tools" className="w-full bg-slate-900 py-20 px-6 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}

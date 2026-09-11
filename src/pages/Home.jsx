@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Hero from '../components/Hero';
-import Destinations from '../components/Destinations';
+import LenticularCarousel from '../components/LenticularCarousel';
 import TripPlanner from '../components/TripPlanner';
 import WeatherWidget from '../components/WeatherWidget';
 import TrainRoutes from '../components/TrainRoutes';
@@ -25,7 +25,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <Hero />
-      <Destinations />
+      <LenticularCarousel />
       <TripPlanner />
       <WeatherWidget />
       <TrainRoutes />

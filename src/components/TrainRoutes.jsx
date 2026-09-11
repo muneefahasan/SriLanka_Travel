@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Train, Bus, Clock, MapPin, Ticket, ShieldCheck, ChevronRight, Info, Compass } from 'lucide-react';
+import { Train, Bus, Clock, MapPin, Ticket, ShieldCheck, ChevronRight, Info, Compass, Search } from 'lucide-react';
 
 export default function TrainRoutes() {
   const [transportMode, setTransportMode] = useState('train'); // 'train' or 'bus'
+  const [searchRoute, setSearchRoute] = useState('');
 
   const trainJourneys = [
     {
@@ -72,184 +73,163 @@ export default function TrainRoutes() {
   ];
 
   const [activeTab, setActiveTab] = useState('kandy-ella');
-  const activeJourney = trainJourneys.find(j => j.id === activeTab);
+  const activeJourney = trainJourneys.find(j => j.id === activeTab) || trainJourneys[0];
+
+  const filteredBuses = busRoutes.filter(b => 
+    b.title.toLowerCase().includes(searchRoute.toLowerCase()) || 
+    b.highlights.toLowerCase().includes(searchRoute.toLowerCase())
+  );
 
   return (
-    <div id="train-routes" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800">
+    <div id="transport" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 inline-block">
+            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1 rounded-full mb-3 inline-block border border-emerald-500/30">
               Public Transport Hub
             </span>
-            <h2 className="text-4xl font-black text-white mb-3 flex items-center gap-3">
-              <Compass className="text-ceylon-accent" size={36} />
+            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3 flex items-center gap-3">
+              <Compass className="text-emerald-400" size={38} />
               Sri Lanka Transport: Trains & Express Buses
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl">
+            <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
               Choose between Sri Lanka Railways scenic trains or CTB Highway Express buses to navigate the island.
             </p>
           </div>
 
-          {/* Transport Mode Switcher (Train vs CTB Bus) */}
+          {/* Transport Mode Switcher */}
           <div className="flex bg-slate-900 border border-slate-800 p-1.5 rounded-2xl">
             <button
               onClick={() => setTransportMode('train')}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer ${
-                transportMode === 'train' ? 'bg-ceylon-accent text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              className={`px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all flex items-center gap-2 cursor-pointer ${
+                transportMode === 'train'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Train size={18} /> Scenic Trains
+              <Train size={18} /> Trains
             </button>
             <button
               onClick={() => setTransportMode('bus')}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer ${
-                transportMode === 'bus' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              className={`px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all flex items-center gap-2 cursor-pointer ${
+                transportMode === 'bus'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Bus size={18} /> CTB & Express Buses
+              <Bus size={18} /> CTB Express Buses
             </button>
           </div>
         </div>
 
-        {/* TAB 1: TRAINS MODE */}
-        {transportMode === 'train' && (
+        {/* Train Mode Content */}
+        {transportMode === 'train' ? (
           <div>
-            {/* Tab Selection */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              {trainJourneys.map((route) => (
+            {/* Train Route Tabs */}
+            <div className="flex flex-wrap gap-3 mb-8">
+              {trainJourneys.map(j => (
                 <button
-                  key={route.id}
-                  onClick={() => setActiveTab(route.id)}
-                  className={`px-6 py-3.5 rounded-2xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                    activeTab === route.id
-                      ? 'bg-ceylon-accent text-white shadow-xl scale-102'
-                      : 'bg-slate-900 text-gray-400 border border-slate-800 hover:text-white'
+                  key={j.id}
+                  onClick={() => setActiveTab(j.id)}
+                  className={`px-5 py-3 rounded-2xl font-extrabold text-sm transition-all flex items-center gap-2 cursor-pointer border ${
+                    activeTab === j.id
+                      ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-950 scale-105'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
                   }`}
                 >
-                  <Train size={18} />
-                  {route.title}
+                  <Train size={18} /> {j.title}
                 </button>
               ))}
             </div>
 
-            {/* Active Train Detail Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Active Train Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
               
-              {/* Left: Image & Info */}
-              <div className="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl">
-                <div className="relative h-60">
-                  <img src={activeJourney.image} alt={activeJourney.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                  <span className="absolute top-4 left-4 bg-emerald-500 text-slate-950 font-black text-xs px-3 py-1.5 rounded-full uppercase tracking-wide">
+              <div className="lg:col-span-5 relative rounded-2xl overflow-hidden min-h-[300px] border border-slate-800">
+                <img src={activeJourney.image} alt={activeJourney.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <span className="bg-emerald-500 text-white text-[11px] font-extrabold uppercase px-3 py-1 rounded-full mb-2 inline-block">
                     {activeJourney.tag}
                   </span>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-2xl font-black text-white mb-2">{activeJourney.title}</h3>
-                    <div className="flex items-center gap-2 text-orange-400 text-sm font-bold mb-4">
-                      <Clock size={16} /> Duration: {activeJourney.duration}
-                    </div>
-                    <p className="text-gray-300 text-xs leading-relaxed mb-6">
-                      <span className="font-bold text-white block mb-1">Highlights:</span>
-                      {activeJourney.highlights}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-slate-800/80 rounded-2xl border border-slate-700/50 flex items-center gap-3">
-                    <ShieldCheck size={24} className="text-emerald-400 flex-shrink-0" />
-                    <div className="text-xs">
-                      <p className="font-bold text-white">Ticket Reservation Tip</p>
-                      <p className="text-gray-400">Book 1st/2nd class reserved seats 30 days prior!</p>
-                    </div>
-                  </div>
+                  <h3 className="text-2xl font-editorial font-extrabold text-white">{activeJourney.title}</h3>
                 </div>
               </div>
 
-              {/* Right: Timetable & Classes */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
-                  <h4 className="text-xl font-bold text-white mb-6 flex items-center justify-between">
-                    <span>Daily Express Train Schedule</span>
-                    <span className="text-xs text-orange-400 font-semibold bg-orange-500/10 px-3 py-1 rounded-full">
-                      SL Railways Timetable
-                    </span>
-                  </h4>
+              <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
+                <div>
+                  <h4 className="text-xl font-editorial font-extrabold text-white mb-2">Daily Train Timetable</h4>
+                  <p className="text-slate-400 text-sm mb-6">{activeJourney.highlights}</p>
 
-                  <div className="space-y-4">
-                    {activeJourney.schedule.map((item, idx) => (
-                      <div key={idx} className="bg-slate-800/60 border border-slate-700/40 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-600 transition-colors">
+                  <div className="space-y-3">
+                    {activeJourney.schedule.map((s, idx) => (
+                      <div key={idx} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                          <span className="font-black text-lg text-white block">{item.train}</span>
-                          <div className="flex items-center gap-3 text-xs text-gray-300 mt-2">
-                            <span className="flex items-center gap-1"><MapPin size={12} className="text-emerald-400" /> {item.depart}</span>
-                            <ChevronRight size={12} className="text-gray-500" />
-                            <span className="flex items-center gap-1"><MapPin size={12} className="text-orange-400" /> {item.arrive}</span>
-                          </div>
+                          <p className="font-extrabold text-emerald-400 text-sm">{s.train}</p>
+                          <p className="text-xs text-slate-300 font-bold mt-0.5">{s.depart} ➔ {s.arrive}</p>
                         </div>
-
-                        <span className="bg-slate-700 text-gray-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-600">
-                          {item.classes}
+                        <span className="text-xs font-extrabold bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-300 w-fit">
+                          {s.classes}
                         </span>
                       </div>
                     ))}
                   </div>
                 </div>
+
+                <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
+                    <Clock size={14} className="text-emerald-400" /> Duration: {activeJourney.duration}
+                  </span>
+                  <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-2">
+                    <Ticket size={14} /> Check Ticket Availability
+                  </button>
+                </div>
               </div>
 
             </div>
           </div>
-        )}
-
-        {/* TAB 2: BUSES MODE (CTB & Highway Express) */}
-        {transportMode === 'bus' && (
+        ) : (
+          /* CTB Bus Mode Content */
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
-              <h4 className="text-xl font-bold text-white mb-6 flex items-center justify-between">
-                <span>CTB & Highway Express Bus Routes</span>
-                <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-3 py-1 rounded-full">
-                  Official Highway & Intercity Buses
-                </span>
-              </h4>
+            
+            {/* Bus Search */}
+            <div className="relative max-w-md mb-6">
+              <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search bus route e.g. Kandy, Galle, Jaffna..."
+                value={searchRoute}
+                onChange={(e) => setSearchRoute(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-full text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {busRoutes.map((route, idx) => (
-                  <div key={idx} className="bg-slate-800/70 border border-slate-700/50 p-6 rounded-3xl flex flex-col justify-between hover:border-orange-500/50 transition-all">
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="bg-orange-500 text-white text-xs font-extrabold px-3 py-1 rounded-full">
-                          {route.routeNo}
-                        </span>
-                        <span className="text-xs text-emerald-400 font-bold bg-emerald-900/40 px-2.5 py-1 rounded-full border border-emerald-700/50">
-                          {route.fare}
-                        </span>
-                      </div>
-
-                      <h5 className="text-lg font-bold text-white mb-2">{route.title}</h5>
-                      <p className="text-xs text-gray-400 mb-3">{route.type}</p>
-                      <p className="text-xs text-gray-300 leading-relaxed mb-4">{route.highlights}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredBuses.map((bus, idx) => (
+                <div key={idx} className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-3 py-1 rounded-full border border-emerald-500/30">
+                        {bus.routeNo}
+                      </span>
+                      <span className="text-emerald-400 text-xs font-extrabold">{bus.fare}</span>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs text-gray-400">
-                      <span className="flex items-center gap-1"><Clock size={14} className="text-orange-400" /> {route.duration}</span>
-                      <span className="font-semibold text-gray-300">{route.frequency}</span>
-                    </div>
+                    <h4 className="text-lg font-editorial font-extrabold text-white mb-2">{bus.title}</h4>
+                    <p className="text-xs text-slate-400 font-bold mb-3">{bus.type}</p>
+                    <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800">{bus.highlights}</p>
                   </div>
-                ))}
-              </div>
+
+                  <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-bold">
+                    <span className="flex items-center gap-1"><Clock size={14} className="text-emerald-400" /> {bus.duration}</span>
+                    <span>{bus.frequency}</span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl flex items-start gap-4">
-              <Info size={24} className="text-orange-400 flex-shrink-0 mt-1" />
-              <div className="text-xs text-gray-300 leading-relaxed">
-                <h6 className="font-bold text-white mb-1">Sri Lanka Public Transport Tip:</h6>
-                <p>For Highway Express buses to Galle/Matara, head to <strong>Makumbura Multimodal Transport Center (MMTC)</strong> or Kadawatha. Highway buses are fully air-conditioned with reserved seats!</p>
-              </div>
-            </div>
           </div>
         )}
 

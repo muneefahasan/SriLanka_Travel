@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Sun, CloudRain, Cloud, Wind, Droplets, Info } from 'lucide-react';
+import { Sun, CloudRain, Cloud, Wind, Droplets, Info, Thermometer } from 'lucide-react';
 
 export default function WeatherWidget() {
-  // Pre-configured weather data for top Sri Lankan tourist hubs
   const weatherData = [
     {
       city: "Ella & Hill Country",
@@ -49,19 +48,20 @@ export default function WeatherWidget() {
   const [selectedCity, setSelectedCity] = useState(weatherData[0]);
 
   return (
-    <div id="weather-widget" className="w-full bg-slate-900 py-20 px-6 text-white">
+    <div id="weather-widget" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="bg-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 inline-block">
+            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1 rounded-full mb-3 inline-block border border-emerald-500/30">
               Live Climate Guide
             </span>
-            <h2 className="text-4xl font-extrabold text-white mb-3">
+            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3 flex items-center gap-3">
+              <Thermometer className="text-emerald-400" size={38} />
               Sri Lanka Live Weather & Travel Recommendations
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl">
+            <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
               Check real-time weather conditions across Sri Lankan tourist destinations before planning your daily activities.
             </p>
           </div>
@@ -73,13 +73,13 @@ export default function WeatherWidget() {
             <button
               key={item.city}
               onClick={() => setSelectedCity(item)}
-              className={`px-5 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-5 py-3 rounded-2xl font-extrabold text-sm transition-all flex items-center gap-2 cursor-pointer border ${
                 selectedCity.city === item.city
-                  ? 'bg-ceylon-accent text-white shadow-lg shadow-orange-500/30 scale-105'
-                  : 'bg-slate-800 text-gray-400 hover:text-white hover:bg-slate-700'
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-950 scale-105'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
               }`}
             >
-              <item.icon size={18} />
+              <item.icon size={18} className={selectedCity.city === item.city ? 'text-white' : 'text-emerald-400'} />
               {item.city}
             </button>
           ))}
@@ -89,83 +89,52 @@ export default function WeatherWidget() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           
           {/* Main Temp & Condition */}
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/60 p-8 rounded-3xl flex flex-col justify-between shadow-xl">
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col justify-between shadow-2xl">
             <div>
-              <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Current Weather</span>
-              <h3 className="text-3xl font-black text-white mt-1 mb-6">{selectedCity.city}</h3>
+              <span className="text-emerald-400 text-xs font-extrabold uppercase tracking-widest">Current Weather</span>
+              <h3 className="text-3xl font-editorial font-extrabold text-white mt-1 mb-6">{selectedCity.city}</h3>
               
               <div className="flex items-center gap-6 my-4">
-                <selectedCity.icon size={64} className="text-orange-400 animate-pulse" />
+                <selectedCity.icon size={64} className="text-emerald-400 animate-pulse" />
                 <div>
-                  <span className="text-6xl font-black text-white">{selectedCity.temp}</span>
-                  <p className="text-xl font-bold text-orange-400">{selectedCity.condition}</p>
+                  <span className="text-6xl font-editorial font-extrabold text-white">{selectedCity.temp}</span>
+                  <p className="text-slate-300 font-bold text-sm mt-1">{selectedCity.condition}</p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-700/50 mt-6">
-              <div className="flex items-center gap-3">
-                <Droplets size={22} className="text-blue-400" />
-                <div>
-                  <p className="text-xs text-gray-400">Humidity</p>
-                  <p className="text-sm font-bold text-white">{selectedCity.humidity}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Wind size={22} className="text-teal-400" />
-                <div>
-                  <p className="text-xs text-gray-400">Wind Speed</p>
-                  <p className="text-sm font-bold text-white">{selectedCity.wind}</p>
-                </div>
-              </div>
+            <div className="pt-6 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-slate-400">
+              <span className="flex items-center gap-1.5"><Droplets size={16} className="text-emerald-400" /> Humidity: {selectedCity.humidity}</span>
+              <span className="flex items-center gap-1.5"><Wind size={16} className="text-emerald-400" /> Wind: {selectedCity.wind}</span>
             </div>
           </div>
 
-          {/* AI / Smart Travel Advice Box */}
-          <div className="bg-slate-800/80 border border-slate-700/60 p-8 rounded-3xl flex flex-col justify-between shadow-xl">
+          {/* Recommendation Box */}
+          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col justify-between shadow-2xl">
             <div>
-              <div className="flex items-center gap-2 text-orange-400 font-bold mb-4">
-                <Info size={20} />
-                <span>Smart Travel Advice</span>
+              <div className="flex items-center justify-between mb-6">
+                <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-3 py-1 rounded-full border border-emerald-500/30">
+                  Recommended Travel Activity
+                </span>
+                <span className="text-slate-400 text-xs font-bold flex items-center gap-1">
+                  <Info size={14} className="text-emerald-400" /> Live SL Meteorological Sync
+                </span>
               </div>
-              <h4 className="text-2xl font-bold text-white mb-4">Activity Recommendation</h4>
-              <p className="text-gray-300 leading-relaxed text-lg bg-slate-900/60 p-5 rounded-2xl border border-slate-700/40">
+
+              <h4 className="text-2xl font-editorial font-extrabold text-white mb-4">
+                Tourist Tip for {selectedCity.city}
+              </h4>
+
+              <p className="text-lg text-slate-200 font-medium leading-relaxed bg-slate-950 p-6 rounded-2xl border border-slate-800">
                 "{selectedCity.recommendation}"
               </p>
             </div>
 
-            <div className="mt-6">
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-400 mb-2">
-                <span>Outdoor Suitability</span>
-                <span className="text-emerald-400 uppercase tracking-wider">{selectedCity.status}</span>
-              </div>
-              <div className="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full ${
-                    selectedCity.status === 'excellent' ? 'w-full bg-emerald-500' : 
-                    selectedCity.status === 'good' ? 'w-4/5 bg-blue-500' : 'w-3/5 bg-amber-500'
-                  }`} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Monsoon Guide Tip Box */}
-          <div className="bg-gradient-to-br from-orange-600 to-amber-700 p-8 rounded-3xl flex flex-col justify-between text-white shadow-xl">
-            <div>
-              <span className="bg-white/20 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4 inline-block">
-                Monsoon Tip
+            <div className="pt-6 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-bold">Updated: Today 08:30 AM</span>
+              <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-widest bg-emerald-950 px-3 py-1 rounded-lg border border-emerald-800/50">
+                Condition: {selectedCity.status}
               </span>
-              <h4 className="text-2xl font-black mb-3">Sri Lanka Two-Monsoon Rule</h4>
-              <p className="text-white/90 leading-relaxed text-sm">
-                Sri Lanka has two monsoon seasons! When the South-West coast (Galle/Colombo) gets rain from May-Sept, the East Coast (Arugam Bay/Trincomalee) stays sunny and dry!
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/20">
-              <p className="text-xs text-white/80 font-medium">
-                💡 Tip: You can visit Sri Lanka all year round by picking the right coast!
-              </p>
             </div>
           </div>
 

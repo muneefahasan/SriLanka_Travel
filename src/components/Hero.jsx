@@ -1,4 +1,6 @@
 import { MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import ParticleText from './ParticleText';
+import SpecularButton from './SpecularButton';
 
 export default function Hero() {
   const scrollToPlanner = () => {
@@ -19,7 +21,7 @@ export default function Hero() {
           loop 
           muted 
           playsInline
-          className="w-full h-full object-cover  scale-105"
+          className="w-full h-full object-cover scale-105"
         />
         {/* Dark overlay so the text looks clear and readable over the blurred video */}
         <div className="absolute inset-0 bg-black/40 z-10" />
@@ -36,23 +38,18 @@ export default function Hero() {
             <Sparkles size={14} className="text-emerald-400" /> Pearl of the Indian Ocean
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-editorial font-extrabold text-white tracking-tight leading-[1.05]">
-            Explore<br />
-            <span className="italic font-normal text-emerald-400">Sri Lanka</span>
-          </h1>
+          {/* Interactive 3D Particle Text */}
+          <ParticleText text1="Explore" text2="Sri Lanka" />
 
           <p className="text-lg md:text-xl text-gray-200 max-w-lg font-medium leading-relaxed">
             Are you ready to explore the Pearl of the Indian Ocean? Our interactive map will help you plan the perfect trip. Discover the best sights, activities, and routes with just a few clicks.
           </p>
 
+          {/* Glossy Specular Button */}
           <div className="pt-4 flex flex-wrap items-center gap-4">
-            <button 
-              onClick={scrollToPlanner}
-              className="flex items-center gap-3 bg-ceylon-slate hover:bg-ceylon-primary text-white px-8 py-4 rounded-full font-extrabold transition-all shadow-xl text-lg group cursor-pointer border border-white/20"
-            >
+            <SpecularButton onClick={scrollToPlanner} icon={ArrowRight}>
               PLAN MY TRIP
-              <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
-            </button>
+            </SpecularButton>
           </div>
         </div>
 

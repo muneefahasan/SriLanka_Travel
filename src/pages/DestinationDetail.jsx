@@ -82,7 +82,7 @@ export default function DestinationDetail() {
       {/* Hero Banner */}
       <div className="relative h-[450px] w-full">
         <img 
-          src={destination.image_url} 
+          src={destination.cover_image_url || destination.cover_image || destination.image_url} 
           alt={destination.name} 
           className="w-full h-full object-cover"
         />
@@ -117,6 +117,14 @@ export default function DestinationDetail() {
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <h2 className="text-2xl font-bold text-ceylon-primary mb-4">About this Destination</h2>
+            
+            {/* Featured Photo Showcase if cover_image_url is different */}
+            {destination.cover_image_url && destination.image_url && (
+              <div className="mb-6 h-72 w-full rounded-2xl overflow-hidden shadow-md">
+                <img src={destination.image_url} alt={destination.name} className="w-full h-full object-cover" />
+              </div>
+            )}
+
             <p className="text-gray-700 leading-relaxed text-lg mb-6">
               {destination.description}
             </p>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Globe, UserCircle, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
+import GooeyNav from './GooeyNav';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -22,47 +23,32 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const scrollToSection = (id) => {
-    const section = document.getElementById(id);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const navItems = [
+    { label: "Destinations", href: "#destinations" },
+    { label: "Trip Planner", href: "#trip-planner" },
+    { label: "Weather", href: "#weather-widget" },
+    { label: "Transport", href: "#transport" },
+    { label: "Festivals", href: "#festivals" },
+    { label: "Tools", href: "#tourist-tools" }
+  ];
 
   return (
-    <nav className="w-full bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 shadow-sm px-6 py-3.5">
+    <nav className="w-full bg-slate-950/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800 shadow-xl px-6 py-3 text-white">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-2 cursor-pointer">
-          <div className="w-9 h-9 bg-ceylon-primary text-white flex items-center justify-center rounded-xl font-black text-lg shadow-sm">
+          <div className="w-9 h-9 bg-emerald-600 text-white flex items-center justify-center rounded-xl font-black text-lg shadow-md">
             SL
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-ceylon-primary">
-            Visit<span className="text-ceylon-accent">Ceylon</span>
+          <span className="font-editorial font-extrabold text-2xl tracking-tight text-white">
+            Visit<span className="text-emerald-400">Ceylon</span>
           </span>
         </Link>
 
-        {/* Clean Header Navigation Links (Scroll to Sections) */}
-        <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-gray-700 uppercase tracking-wider">
-          <button onClick={() => scrollToSection('destinations')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Destinations
-          </button>
-          <button onClick={() => scrollToSection('trip-planner')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Trip Planner
-          </button>
-          <button onClick={() => scrollToSection('weather-widget')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Weather
-          </button>
-          <button onClick={() => scrollToSection('train-routes')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Transport
-          </button>
-          <button onClick={() => scrollToSection('festivals-calendar')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Festivals
-          </button>
-          <button onClick={() => scrollToSection('tourist-tools')} className="hover:text-ceylon-accent transition-colors cursor-pointer">
-            Tools
-          </button>
+        {/* Gooey Navigation Bar */}
+        <div className="hidden lg:block">
+          <GooeyNav items={navItems} />
         </div>
 
         {/* Right Side Actions */}

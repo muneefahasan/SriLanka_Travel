@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { User, Map, ArrowRight, Lock, Mail, Award, Phone, MapPin, Building, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import BorderGlow from '../components/BorderGlow';
 
 export default function Login() {
   const [role, setRole] = useState('traveler'); // 'traveler', 'guide', 'admin'
@@ -35,7 +36,6 @@ export default function Login() {
           .single();
 
         if (guideError && !guideData) {
-          // Soft check: allow signup if valid_guides table is not yet filled, but note verification pending
           console.log("License check note: guide registered with pending verification");
         }
       }
@@ -85,48 +85,69 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-ceylon-bg flex flex-col items-center justify-center p-6 py-12">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 py-12 text-white">
       
       <div className="text-center mb-6">
-        <h1 className="text-4xl font-black text-ceylon-primary mb-2">Welcome to VisitCeylon</h1>
-        <p className="text-gray-600 font-medium">
-          {isSignUp ? 'Create your official account' : 'Login to your account'} as a <span className="font-bold text-ceylon-accent uppercase">{role}</span>
+        <h1 className="text-4xl font-editorial font-extrabold text-white mb-2">Welcome to VisitCeylon</h1>
+        <p className="text-slate-400 font-medium">
+          {isSignUp ? 'Create your official account' : 'Login to your account'} as a <span className="font-bold text-emerald-400 uppercase">{role}</span>
         </p>
       </div>
 
       {/* Role Selector Tabs (Traveler / Guide / Admin) */}
-      <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200 mb-6 max-w-sm w-full">
-        <button
-          type="button"
-          onClick={() => { setRole('traveler'); setIsSignUp(false); }}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-            role === 'traveler' ? 'bg-ceylon-primary text-white shadow-md' : 'text-gray-500 hover:text-ceylon-primary'
-          }`}
-        >
-          <Map size={14} /> Traveler
-        </button>
-        <button
-          type="button"
-          onClick={() => { setRole('guide'); setIsSignUp(false); }}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-            role === 'guide' ? 'bg-ceylon-accent text-white shadow-md' : 'text-gray-500 hover:text-ceylon-accent'
-          }`}
-        >
-          <User size={14} /> Tour Guide
-        </button>
-        <button
-          type="button"
-          onClick={() => { setRole('admin'); setIsSignUp(false); }}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-            role === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'text-gray-500 hover:text-slate-900'
-          }`}
-        >
-          <ShieldCheck size={14} /> Admin
-        </button>
-      </div>
+      <BorderGlow
+        edgeSensitivity={30}
+        glowColor="16 185 129"
+        backgroundColor="#090d16"
+        borderRadius={20}
+        glowRadius={30}
+        glowIntensity={1.0}
+        colors={['#10b981', '#34d399', '#059669']}
+        className="mb-6 max-w-sm w-full"
+      >
+        <div className="flex p-1.5 rounded-2xl w-full">
+          <button
+            type="button"
+            onClick={() => { setRole('traveler'); setIsSignUp(false); }}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              role === 'traveler' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Map size={14} /> Traveler
+          </button>
+          <button
+            type="button"
+            onClick={() => { setRole('guide'); setIsSignUp(false); }}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              role === 'guide' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <User size={14} /> Tour Guide
+          </button>
+          <button
+            type="button"
+            onClick={() => { setRole('admin'); setIsSignUp(false); }}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              role === 'admin' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <ShieldCheck size={14} /> Admin
+          </button>
+        </div>
+      </BorderGlow>
 
-      {/* Auth Form Container */}
-      <div className="bg-white p-8 rounded-3xl shadow-xl max-w-lg w-full border border-gray-100">
+      {/* Auth Form Container with BorderGlow */}
+      <BorderGlow
+        edgeSensitivity={30}
+        glowColor="16 185 129"
+        backgroundColor="#0f172a"
+        borderRadius={28}
+        glowRadius={40}
+        glowIntensity={1.0}
+        colors={['#c084fc', '#f472b6', '#38bdf8']}
+        className="max-w-lg w-full"
+      >
+        <div className="p-8 rounded-3xl w-full">
         
         {message && (
           <div className={`mb-6 p-4 rounded-xl text-sm font-medium ${
@@ -232,31 +253,31 @@ export default function Login() {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">Email Address</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
             <div className="relative">
-              <Mail size={18} className="absolute left-3.5 top-3 text-gray-400" />
+              <Mail size={18} className="absolute left-3.5 top-3 text-slate-400" />
               <input 
                 type="email" 
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com" 
-                className="w-full bg-ceylon-bg border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-ceylon-light text-sm"
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">Password</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Password</label>
             <div className="relative">
-              <Lock size={18} className="absolute left-3.5 top-3 text-gray-400" />
+              <Lock size={18} className="absolute left-3.5 top-3 text-slate-400" />
               <input 
                 type="password" 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" 
-                className="w-full bg-ceylon-bg border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-ceylon-light text-sm"
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
               />
             </div>
           </div>
@@ -264,7 +285,7 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-ceylon-primary hover:bg-ceylon-accent text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md disabled:opacity-50 mt-2 cursor-pointer"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md disabled:opacity-50 mt-2 cursor-pointer"
           >
             {loading ? 'Processing...' : (isSignUp ? `Register as ${role}` : `Login as ${role}`)} 
             <ArrowRight size={18} />
@@ -272,20 +293,21 @@ export default function Login() {
         </form>
 
         {/* Toggle between Login and Signup */}
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-6 text-center text-sm text-slate-400">
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button 
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-ceylon-primary font-bold hover:underline ml-1 cursor-pointer"
+            className="text-emerald-400 font-bold hover:underline ml-1 cursor-pointer"
           >
             {isSignUp ? 'Login here' : 'Sign Up'}
           </button>
         </div>
 
-      </div>
+        </div>
+      </BorderGlow>
 
-      <Link to="/" className="mt-6 text-ceylon-muted hover:text-ceylon-primary font-medium text-sm underline">
+      <Link to="/" className="mt-6 text-slate-400 hover:text-emerald-400 font-medium text-sm underline">
         Back to Home Page
       </Link>
     </div>

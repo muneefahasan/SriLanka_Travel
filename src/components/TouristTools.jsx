@@ -1,193 +1,79 @@
-import { useState } from 'react';
-import { DollarSign, ShieldAlert, PhoneCall, ArrowRightLeft, HeartPulse, Shield, Info, Copy, Check } from 'lucide-react';
+import MagicBento from './MagicBento';
 
 export default function TouristTools() {
-  // Currency Exchange Rates (Base: LKR)
-  const rates = {
-    USD: 305.50,
-    EUR: 330.20,
-    GBP: 392.80,
-    INR: 3.65,
-    AUD: 202.10,
-    CAD: 224.40
-  };
-
-  const [amount, setAmount] = useState(100); // Foreign amount
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [copiedNumber, setCopiedNumber] = useState(null);
-
-  // Conversion Calculation
-  const convertedLKR = (amount * rates[selectedCurrency]).toLocaleString('en-US', {
-    maximumFractionDigits: 2
-  });
-
-  const handleCopy = (number) => {
-    navigator.clipboard.writeText(number);
-    setCopiedNumber(number);
-    setTimeout(() => setCopiedNumber(null), 2000);
-  };
-
-  const emergencyContacts = [
+  const touristToolsData = [
     {
-      title: "Tourist Police Hotline",
-      number: "1912",
-      badge: "24/7 Tourist Support",
-      icon: Shield,
-      color: "bg-blue-600",
-      desc: "Official SLTDA Tourist Police for reporting issues, scams, or seeking immediate assistance."
+      color: '#0b1120',
+      title: '💱 Currency Exchange (LKR)',
+      description: 'Official exchange rate breakdown for Sri Lankan Rupee (LKR). Available at BIA Airport 24/7 & Commercial Bank counters.',
+      label: 'Finance',
+      chips: ['1 USD = 305 LKR', '1 EUR = 332 LKR', '1 GBP = 395 LKR', '1 INR = 3.65 LKR']
     },
     {
-      title: "Suwa Seriya Free Ambulance",
-      number: "1990",
-      badge: "Medical Emergency",
-      icon: HeartPulse,
-      color: "bg-red-600",
-      desc: "Free 24/7 government emergency medical response & ambulance service across Sri Lanka."
+      color: '#0b1120',
+      title: '🚨 Emergency Hotlines',
+      description: 'Instant 24/7 emergency dispatch services for foreign tourists across Sri Lanka.',
+      label: 'Safety',
+      chips: ['Police: 1912', 'Ambulance: 1990', 'Fire: 110', 'SLTDA: +94 11 242 6800']
     },
     {
-      title: "Police Emergency",
-      number: "119",
-      badge: "General Police",
-      icon: ShieldAlert,
-      color: "bg-amber-600",
-      desc: "General police control room for emergency crime reports and urgent police response."
+      color: '#0b1120',
+      title: '📶 SIM & 4G eSIM Guide',
+      description: 'Tourist SIM packs with 50GB high-speed 4G data + local calls activated instantly at BIA airport arrival hall.',
+      label: 'Connectivity',
+      chips: ['Dialog $12 50GB', 'Mobitel 4G eSIM', 'AirHub Instant QR']
     },
     {
-      title: "SLTDA Tourist Helpline",
-      number: "+94 11 242 6900",
-      badge: "Info & Complaints",
-      icon: Info,
-      color: "bg-emerald-600",
-      desc: "Official Tourism Development Authority helpline for travel advisories and guide complaints."
+      color: '#0b1120',
+      title: '🙏 Cultural Temple Rules',
+      description: 'Important sacred guidelines for visiting ancient temples like Kandy Tooth Temple and Sigiriya.',
+      label: 'Culture',
+      chips: ['Cover Shoulders & Knees', 'Remove Shoes & Hats', 'No Selfie Back to Buddha']
+    },
+    {
+      color: '#0b1120',
+      title: '⛅ Monsoon & Sea Radar',
+      description: 'Seasonal climate guide for planning beach activities and high-altitude mountain treks safely.',
+      label: 'Weather',
+      chips: ['SW Monsoon (May-Sep)', 'NE Monsoon (Oct-Jan)', 'Sea Safety Flags']
+    },
+    {
+      color: '#0b1120',
+      title: '🚌 Transit Fare Rates',
+      description: 'Official meter rates and ticket prices for Tuk-Tuks, Express Highway buses, and Scenic trains.',
+      label: 'Transit',
+      chips: ['Tuk-Tuk: ~100 LKR base', 'Highway Bus: ~1,000 LKR', 'Train: 600-2,500 LKR']
     }
   ];
 
   return (
-    <div id="tourist-tools" className="w-full bg-slate-900 py-20 px-6 text-white border-t border-slate-800">
+    <div id="tourist-tools" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-          <div>
-            <span className="bg-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 inline-block">
-              Essential Tourist Utilities
-            </span>
-            <h2 className="text-4xl font-black text-white mb-3">
-              Currency Converter & Emergency Helplines
-            </h2>
-            <p className="text-gray-400 text-lg max-w-2xl">
-              Calculate live LKR currency conversions and access essential 24/7 tourist safety hotline numbers.
-            </p>
-          </div>
+        {/* Header without icon */}
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+            Tourist Tools & Travel Utilities
+          </h2>
+          <p className="text-gray-400 text-base md:text-lg font-medium">
+            Interactive travel tools, emergency hotlines, exchange rates, and cultural guidelines for Sri Lanka.
+          </p>
         </div>
 
-        {/* Tools Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Live LKR Currency Converter */}
-          <div className="lg:col-span-5 bg-slate-800/90 border border-slate-700/60 p-8 rounded-3xl shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-orange-500/20 p-3 rounded-2xl text-orange-400">
-                <ArrowRightLeft size={24} />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-white">LKR Currency Converter</h3>
-                <p className="text-xs text-gray-400">Live Estimated Foreign Exchange Rate</p>
-              </div>
-            </div>
-
-            {/* Input Box */}
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-2">Foreign Amount</label>
-                <div className="flex bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden focus-within:border-orange-500">
-                  <input
-                    type="number"
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full bg-transparent px-4 py-3.5 text-white font-bold text-lg focus:outline-none"
-                  />
-                  <select
-                    value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value)}
-                    className="bg-slate-800 text-white font-bold px-4 border-l border-slate-700 focus:outline-none cursor-pointer"
-                  >
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="AUD">AUD ($)</option>
-                    <option value="CAD">CAD ($)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Conversion Result Box */}
-              <div className="bg-slate-900/90 border border-slate-700 p-6 rounded-2xl text-center">
-                <span className="text-xs text-gray-400 uppercase font-semibold">Equivalent Amount in Sri Lankan Rupees</span>
-                <div className="text-4xl font-black text-orange-400 mt-2 mb-1">
-                  Rs. {convertedLKR} <span className="text-base font-bold text-gray-300">LKR</span>
-                </div>
-                <span className="text-xs text-gray-500">
-                  1 {selectedCurrency} = {rates[selectedCurrency]} LKR
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 text-xs text-gray-400 flex items-center gap-2">
-              <DollarSign size={16} className="text-emerald-400 flex-shrink-0" />
-              <span>Card payments (Visa/Mastercard) and LKR cash are accepted at major Sri Lanka tourist spots.</span>
-            </div>
-          </div>
-
-          {/* Right Column: Emergency Helplines Grid */}
-          <div className="lg:col-span-7 space-y-6">
-            <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-              <PhoneCall className="text-red-400" size={24} /> 24/7 Tourist Emergency Helplines
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {emergencyContacts.map((contact, idx) => (
-                <div key={idx} className="bg-slate-800/60 border border-slate-700/50 p-6 rounded-3xl flex flex-col justify-between hover:border-slate-600 transition-all">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`${contact.color} p-2.5 rounded-xl text-white`}>
-                        <contact.icon size={20} />
-                      </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-700">
-                        {contact.badge}
-                      </span>
-                    </div>
-
-                    <h4 className="font-bold text-white text-lg mb-1">{contact.title}</h4>
-                    <p className="text-gray-400 text-xs leading-relaxed mb-4">{contact.desc}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-700/40">
-                    <span className="text-xl font-black text-orange-400">{contact.number}</span>
-                    <button
-                      onClick={() => handleCopy(contact.number)}
-                      className="flex items-center gap-1 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-3 py-2 rounded-xl transition-all cursor-pointer"
-                    >
-                      {copiedNumber === contact.number ? (
-                        <>
-                          <Check size={14} className="text-emerald-400" /> Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={14} /> Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-        </div>
+        {/* MagicBento Grid */}
+        <MagicBento 
+          cards={touristToolsData}
+          textAutoHide={false}
+          enableStars={true}
+          enableSpotlight={true}
+          enableBorderGlow={true}
+          enableTilt={true}
+          enableMagnetism={true}
+          clickEffect={true}
+          spotlightRadius={350}
+          particleCount={14}
+          glowColor="16, 185, 129"
+        />
 
       </div>
     </div>

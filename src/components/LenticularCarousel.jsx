@@ -83,7 +83,7 @@ export default function LenticularCarousel() {
     <div id="destinations" className="w-full bg-slate-950 py-20 px-4 overflow-hidden border-t border-slate-800 text-white relative">
       <div className="max-w-7xl mx-auto text-center mb-8">
         <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
-          Explore 30 Iconic Sri Lankan Destinations
+          Explore Iconic Sri Lankan Destinations
         </h2>
         <p className="text-gray-400 text-base md:text-lg max-w-3xl mx-auto font-medium">
           From ancient rock fortresses to crystal clear beaches, mountain tea estates, and wild elephant parks.

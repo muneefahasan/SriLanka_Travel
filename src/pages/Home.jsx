@@ -7,7 +7,6 @@ import WeatherWidget from '../components/WeatherWidget';
 import TrainRoutes from '../components/TrainRoutes';
 import FestivalsCalendar from '../components/FestivalsCalendar';
 import TouristTools from '../components/TouristTools';
-import TravelEssentials from '../components/TravelEssentials';
 import TourGuides from '../components/TourGuides';
 import Community from '../components/Community';
 
@@ -31,7 +30,6 @@ export default function Home() {
       <TrainRoutes />
       <FestivalsCalendar />
       <TouristTools />
-      <TravelEssentials />
       <TourGuides />
       <Community />
     </div>

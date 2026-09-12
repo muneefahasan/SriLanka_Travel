@@ -12,7 +12,7 @@ export default function TrainRoutes() {
       tag: 'World\'s Most Scenic Train Journey',
       duration: '6 - 7 Hours',
       highlights: 'Tea plantations, St. Clair Waterfalls, Nine Arches Bridge, Pattipola (Highest station)',
-      image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80',
+      image: '/route/kandy_badulla.png',
       schedule: [
         { train: 'Podi Menike (Express 1005)', depart: '05:55 AM (Kandy)', arrive: '12:40 PM (Ella)', classes: '1st & 2nd Class' },
         { train: 'Udarata Menike (Express 1015)', depart: '08:47 AM (Kandy)', arrive: '03:25 PM (Ella)', classes: '1st, 2nd, 3rd Class' },
@@ -25,7 +25,7 @@ export default function TrainRoutes() {
       tag: 'Coastal Ocean Railway',
       duration: '2.5 - 3 Hours',
       highlights: 'Indian Ocean coastal views, beach waves, Galle Fort access',
-      image: 'https://images.unsplash.com/photo-1574991485647-758ea065963b?auto=format&fit=crop&w=800&q=80',
+      image: '/route/c_g.png',
       schedule: [
         { train: 'Ruhunu Kumari (Express 8058)', depart: '06:50 AM (Colombo)', arrive: '09:20 AM (Galle)', classes: '2nd & 3rd Class' },
         { train: 'Sagarika Express (8096)', depart: '04:30 PM (Colombo)', arrive: '07:10 PM (Galle)', classes: '2nd & 3rd Class' }
@@ -87,12 +87,8 @@ export default function TrainRoutes() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1 rounded-full mb-3 inline-block border border-emerald-500/30">
-              Public Transport Hub
-            </span>
-            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3 flex items-center gap-3">
-              <Compass className="text-emerald-400" size={38} />
-              Sri Lanka Transport: Trains & Express Buses
+            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+              Sri Lanka Transport
             </h2>
             <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
               Choose between Sri Lanka Railways scenic trains or CTB Highway Express buses to navigate the island.

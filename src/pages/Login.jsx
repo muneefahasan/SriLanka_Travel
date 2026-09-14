@@ -5,10 +5,12 @@ import { supabase } from '../lib/supabaseClient';
 import BorderGlow from '../components/BorderGlow';
 
 export default function Login() {
-  const [role, setRole] = useState('traveler'); // 'traveler', 'guide', 'admin'
-  const [isSignUp, setIsSignUp] = useState(false); // false = Login, true = Signup
-  
-  // Form fields
+  // NOTE: Admin removed from public signup/login tabs on purpose.
+  // Admin accounts must be created directly in Supabase (or a separate
+  // internal-only process) — never through a public form. See fix notes.
+  const [role, setRole] = useState('traveler'); // 'traveler' or 'guide' only
+  const [isSignUp, setIsSignUp] = useState(false);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,27 +19,10 @@ export default function Login() {
   const [district, setDistrict] = useState('Colombo');
   const [address, setAddress] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-
-  // Pre-configured 6 SLTDA Certified Tour Guides for Quick Demo Login
-  const DEMO_GUIDES = [
-    { name: "Kusal Perera", email: "kusal.guide@visitceylon.com", role: "SLTDA National Guide", district: "Kandy", phone: "0779301088" },
-    { name: "Nimali Silva", email: "nimali.guide@visitceylon.com", role: "SLTDA Licensed Chauffeur", district: "Galle", phone: "0714456789" },
-    { name: "Rohan Fernando", email: "rohan.guide@visitceylon.com", role: "Site Specialist Guide", district: "Sigiriya", phone: "0752233445" },
-    { name: "Suresh Kumar", email: "suresh.guide@visitceylon.com", role: "SLTDA National Guide", district: "Jaffna", phone: "0771122334" },
-    { name: "Dinesh Jayasinghe", email: "dinesh.guide@visitceylon.com", role: "Safari Tracker Guide", district: "Yala", phone: "0788899001" },
-    { name: "Dilani Wickramasinghe", email: "dilani.guide@visitceylon.com", role: "SLTDA Chauffeur Guide", district: "Nuwara Eliya", phone: "0765544332" }
-  ];
-
-  const handleSelectDemoGuide = (guide) => {
-    setEmail(guide.email);
-    setPassword('Guide123!');
-    setConfirmPassword('Guide123!');
-    setMessage(`Selected demo guide account for ${guide.name} (${guide.email})`);
-  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -45,39 +30,28 @@ export default function Login() {
     setMessage('');
 
     if (isSignUp) {
-      // Validate Confirm Password matching
       if (password !== confirmPassword) {
         setMessage('Passwords do not match! Please verify your confirm password.');
         setLoading(false);
         return;
       }
 
-      // Guide verification check
-      if (role === 'guide' && licenseNumber) {
-        const { data: guideData, error: guideError } = await supabase
-          .from('valid_guides')
-          .select('*')
-          .eq('license_number', licenseNumber)
-          .single();
-
-        if (guideError && !guideData) {
-          console.log("License check note: guide registered with pending verification");
-        }
-      }
-
-      // Sign Up Logic storing rich metadata in Supabase Auth & Profile
+      // Signup only sends role/profile info as metadata. The actual `profiles`
+      // row (with the REAL, trusted role) is created server-side by a DB
+      // trigger — see supabase_schema_fixes.sql. Even if someone tampers
+      // with this request, they cannot grant themselves guide/admin access;
+      // guides always start unverified until an admin approves them.
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            role: role,
+            role: role, // trigger ignores anything except 'guide' -> forces 'traveler' otherwise
             full_name: fullName,
             phone: phone,
             district: district,
             address: address,
             license_number: licenseNumber,
-            sltda_status: role === 'guide' ? 'SLTDA Approved' : 'Member'
           }
         }
       });
@@ -85,35 +59,40 @@ export default function Login() {
       if (error) {
         setMessage(error.message);
       } else {
-        setMessage('Registration successful! You can now login.');
+        setMessage(
+          role === 'guide'
+            ? 'Registration successful! Your SLTDA license is now pending admin verification — you will get dashboard access once approved.'
+            : 'Registration successful! You can now login.'
+        );
         setIsSignUp(false);
       }
     } else {
-      // Login Logic
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        // Fallback for demo guides if not registered in remote DB yet
-        if (role === 'guide' || email.includes('guide@visitceylon.com')) {
-          setMessage(`Welcome ${email.split('@')[0]}! Redirecting to Guide Dashboard...`);
-          setTimeout(() => navigate('/guide-dashboard'), 800);
-        } else {
-          setMessage(error.message);
-        }
+        // No bypass here — a failed login is a failed login, for every role.
+        setMessage(error.message);
       } else {
-        // Redirect based on the role actually stored on the account
-        // (not just whichever tab was selected in the UI), so a traveler
-        // account can't land on /admin simply by clicking the Admin tab.
-        const actualRole = data?.user?.user_metadata?.role || role;
+        // Look up the REAL role from the profiles table (set by the DB
+        // trigger on signup), never trust the tab the user clicked.
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          setMessage('Could not load your account profile. Please contact support.');
+          setLoading(false);
+          return;
+        }
+
         setMessage('Login successful! Redirecting...');
         setTimeout(() => {
-          if (actualRole === 'admin') navigate('/admin');
-          else if (actualRole === 'guide') navigate('/guide-dashboard');
+          if (profile.role === 'admin') navigate('/admin');
+          else if (profile.role === 'guide') navigate('/guide-dashboard');
           else navigate('/');
-        }, 1000);
+        }, 800);
       }
     }
     setLoading(false);
@@ -121,7 +100,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 py-12 text-white">
-      
+
       <div className="text-center mb-6">
         <h1 className="text-4xl font-editorial font-extrabold text-white mb-2">Welcome to VisitCeylon</h1>
         <p className="text-slate-400 font-medium">
@@ -129,7 +108,7 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Role Selector Tabs (Traveler / Guide / Admin) */}
+      {/* Role Selector Tabs — Traveler / Guide ONLY. Admin is not a public signup option. */}
       <BorderGlow
         edgeSensitivity={30}
         glowColor="16 185 129"
@@ -159,19 +138,12 @@ export default function Login() {
           >
             <User size={14} /> Tour Guide
           </button>
-          <button
-            type="button"
-            onClick={() => { setRole('admin'); setIsSignUp(false); }}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'admin' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <ShieldCheck size={14} /> Admin
-          </button>
         </div>
       </BorderGlow>
+      <p className="text-[11px] text-slate-500 -mt-4 mb-6 flex items-center gap-1">
+        <ShieldCheck size={12} /> Admin accounts are issued internally and can't be created here.
+      </p>
 
-      {/* Auth Form Container with BorderGlow */}
       <BorderGlow
         edgeSensitivity={30}
         glowColor="16 185 129"
@@ -183,7 +155,7 @@ export default function Login() {
         className="max-w-lg w-full"
       >
         <div className="p-8 rounded-3xl w-full">
-        
+
         {message && (
           <div className={`mb-6 p-4 rounded-xl text-sm font-medium ${
             message.includes('successful') || message.includes('Redirecting') ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40' : 'bg-red-950/80 text-red-300 border border-red-500/40'
@@ -193,8 +165,7 @@ export default function Login() {
         )}
 
         <form onSubmit={handleAuth} className="space-y-4">
-          
-          {/* Detailed Signup Fields */}
+
           {isSignUp && (
             <>
               <div>
@@ -203,12 +174,12 @@ export default function Login() {
                 </label>
                 <div className="relative">
                   <User size={18} className="absolute left-3.5 top-3 text-slate-400" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder={role === 'guide' ? "e.g., 360 Tours Lanka" : "e.g., John Smith"} 
+                    placeholder={role === 'guide' ? "e.g., 360 Tours Lanka" : "e.g., John Smith"}
                     className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
@@ -219,12 +190,12 @@ export default function Login() {
                   <label className="block text-xs font-bold text-slate-300 mb-1">Contact Phone</label>
                   <div className="relative">
                     <Phone size={16} className="absolute left-3 top-3 text-slate-400" />
-                    <input 
-                      type="tel" 
+                    <input
+                      type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="0779301088" 
+                      placeholder="0779301088"
                       className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
@@ -234,7 +205,7 @@ export default function Login() {
                   <label className="block text-xs font-bold text-slate-300 mb-1">District / Region</label>
                   <div className="relative">
                     <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
-                    <select 
+                    <select
                       value={district}
                       onChange={(e) => setDistrict(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 font-medium"
@@ -257,11 +228,11 @@ export default function Login() {
                     <label className="block text-xs font-bold text-slate-300 mb-1">Office / Local Address</label>
                     <div className="relative">
                       <Building size={16} className="absolute left-3 top-3 text-slate-400" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="367/4, Atgala, Kochchikade" 
+                        placeholder="367/4, Atgala, Kochchikade"
                         className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
@@ -271,16 +242,18 @@ export default function Login() {
                     <label className="block text-xs font-bold text-emerald-400 mb-1">SLTDA Guide License Number</label>
                     <div className="relative">
                       <Award size={18} className="absolute left-3.5 top-3 text-emerald-400" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         value={licenseNumber}
                         onChange={(e) => setLicenseNumber(e.target.value)}
-                        placeholder="e.g., TA/2026/0067" 
+                        placeholder="e.g., TA/2026/0067"
                         className="w-full bg-slate-900 border border-emerald-500/60 text-white placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-400 text-sm font-semibold"
                       />
                     </div>
-                    <p className="text-[11px] text-emerald-400 mt-1">Required: Enter your official SLTDA tourism license.</p>
+                    <p className="text-[11px] text-emerald-400 mt-1">
+                      Your license will be reviewed by an admin before your dashboard is activated.
+                    </p>
                   </div>
                 </>
               )}
@@ -291,12 +264,12 @@ export default function Login() {
             <label className="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
             <div className="relative">
               <Mail size={18} className="absolute left-3.5 top-3 text-slate-400" />
-              <input 
-                type="email" 
+              <input
+                type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com" 
+                placeholder="name@example.com"
                 className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
               />
             </div>
@@ -306,49 +279,47 @@ export default function Login() {
             <label className="block text-xs font-bold text-slate-300 mb-1">Password</label>
             <div className="relative">
               <Lock size={18} className="absolute left-3.5 top-3 text-slate-400" />
-              <input 
-                type="password" 
+              <input
+                type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
+                placeholder="••••••••"
                 className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
               />
             </div>
           </div>
 
-          {/* Confirm Password Field (Mandatory during Sign Up) */}
           {isSignUp && (
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1">Confirm Password</label>
               <div className="relative">
                 <Lock size={18} className="absolute left-3.5 top-3 text-slate-400" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter your password" 
+                  placeholder="Re-enter your password"
                   className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
                 />
               </div>
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md disabled:opacity-50 mt-2 cursor-pointer"
           >
-            {loading ? 'Processing...' : (isSignUp ? `Register as ${role}` : `Login as ${role}`)} 
+            {loading ? 'Processing...' : (isSignUp ? `Register as ${role}` : `Login as ${role}`)}
             <ArrowRight size={18} />
           </button>
         </form>
 
-        {/* Toggle between Login and Signup */}
         <div className="mt-6 text-center text-sm text-slate-400">
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button 
+          <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-emerald-400 font-bold hover:underline ml-1 cursor-pointer"

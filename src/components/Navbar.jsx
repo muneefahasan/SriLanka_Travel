@@ -26,30 +26,43 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Lock body scroll when My Bookings modal is open
+  // Load the logged-in traveler's bookings from Supabase
   useEffect(() => {
-    if (isBookingsOpen) {
-      document.body.style.overflow = 'hidden';
-      // Refresh local bookings
-      try {
-        const stored = JSON.parse(localStorage.getItem('ceylon_tour_bookings') || '[]');
-        setMyBookings(stored);
-      } catch (_e) {}
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isBookingsOpen]);
+    async function loadMyBookings() {
+      if (!user) {
+        setMyBookings([]);
+        return;
+      }
 
-  // Load initial bookings count
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('ceylon_tour_bookings') || '[]');
-      setMyBookings(stored);
-    } catch (_e) {}
-  }, []);
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          id,
+          traveler_id,
+          traveler_name,
+          contact_phone,
+          destination_name,
+          guide_name,
+          travel_date,
+          headcount,
+          guide_type,
+          status,
+          guide_id
+        `)
+        .eq('traveler_id', user.id)
+        .order('id', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load bookings:', error);
+        setMyBookings([]);
+        return;
+      }
+
+      setMyBookings(data || []);
+    }
+
+    loadMyBookings();
+  }, [user, isBookingsOpen]);
 
   const navItems = [
     { label: t.nav?.destinations || "Destinations", href: "#destinations" },
@@ -158,16 +171,19 @@ export default function Navbar() {
 
             {myBookings.length === 0 ? (
               <div className="text-center py-12 space-y-3">
+                <slot />
                 <Clock size={44} className="text-slate-600 mx-auto" />
                 <h4 className="text-lg font-bold text-slate-300">No Booking Requests Sent Yet</h4>
                 <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                  Explore destinations or our 6 Tour Guides section and click "Book a Tour Guide" to request a certified guide.
+                  Explore destinations or our Tour Guides section and click "Book a Tour Guide" to request a certified guide.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {myBookings.map((b, idx) => {
-                  const isAccepted = b.status === 'Accepted & Confirmed';
+                  const isAccepted = b.status === 'accepted';
+                  const isDeclined = b.status === 'declined';
+                  
                   return (
                     <div 
                       key={b.id || idx} 
@@ -180,12 +196,16 @@ export default function Navbar() {
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div>
                           <h4 className="font-bold text-white text-base">{b.destination_name || b.destination || "Custom Sri Lanka Tour"}</h4>
-                          <p className="text-xs text-slate-400">Date: <span className="text-slate-200 font-semibold">{b.start_date || b.date}</span> • Guests: <span className="text-slate-200 font-semibold">{b.headcount || b.guests || 2}</span></p>
+                          <p className="text-xs text-slate-400">Date: <span className="text-slate-200 font-semibold">{b.travel_date}</span> • Guests: <span className="text-slate-200 font-semibold">{b.headcount || b.guests || 2}</span></p>
                         </div>
 
                         {isAccepted ? (
                           <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md">
                             <CheckCircle2 size={13} /> Accepted & Confirmed
+                          </span>
+                        ) : isDeclined ? (
+                          <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md">
+                            <XCircle size={13} /> Booking Declined
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full">
@@ -194,9 +214,26 @@ export default function Navbar() {
                         )}
                       </div>
 
-                      <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-300 flex items-center justify-between">
-                        <span>Guide Type: <strong className="text-emerald-400">{b.guide_type || b.guide_name || "SLTDA Licensed Guide"}</strong></span>
-                        <span className="text-slate-400">{b.contact_phone}</span>
+                      <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
+                        <div>
+                          Guide Type:{' '}
+                          <strong className="text-emerald-400">
+                            {b.guide_type || 'SLTDA Licensed Guide'}
+                          </strong>
+                        </div>
+
+                        {b.guide_name && (
+                          <div>
+                            Guide:{' '}
+                            <strong className="text-slate-200">
+                              {b.guide_name}
+                            </strong>
+                          </div>
+                        )}
+
+                        <div className="text-slate-400">
+                          {b.contact_phone}
+                        </div>
                       </div>
                     </div>
                   );
@@ -205,6 +242,7 @@ export default function Navbar() {
             )}
 
             <button
+              onClick={() => setIsBookingsOpen(exports => exports)}
               onClick={() => setIsBookingsOpen(false)}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer mt-6"
             >

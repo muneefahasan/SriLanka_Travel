@@ -46,35 +46,61 @@ export default function TourGuides() {
     };
   }, [isModalOpen]);
 
-  useEffect(() => {
-    async function fetchGuides() {
-      const { data, error } = await supabase.from('valid_guides').select('*');
-      if (!error && data && data.length > 0) {
-        const fetched = data.map((g, idx) => ({
-          id: g.id || idx + 1,
-          name: g.name || g.full_name || initial6Guides[idx % 6].name,
-          district: g.district || g.location || initial6Guides[idx % 6].district,
-          license_status: g.sltda_status || g.license_status || initial6Guides[idx % 6].license_status,
-          rating: g.rating || initial6Guides[idx % 6].rating,
-          phone: g.phone || initial6Guides[idx % 6].phone,
-          bio: g.bio || g.specialties || initial6Guides[idx % 6].bio,
-          image: g.image_url || g.image || g.profile_pic || fallbackPhotos[idx % fallbackPhotos.length]
-        }));
+ useEffect(() => {
+  async function fetchGuides() {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
 
-        if (fetched.length < 6) {
-          const filled = [...fetched];
-          for (let i = fetched.length; i < 6; i++) {
-            filled.push(initial6Guides[i]);
-          }
-          setGuides(filled);
-        } else {
-          setGuides(fetched.slice(0, 6));
-        }
-      }
+    // Only fetch database guides for logged-in users.
+    // Logged-out visitors will see the built-in guide cards.
+    if (!user) {
+      return;
     }
-    fetchGuides();
-  }, []);
 
+    const { data, error } = await supabase
+      .from('valid_guides')
+      .select('*');
+
+    if (error) {
+      console.error('Failed to load guides:', error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      const fetched = data.map((g, idx) => ({
+        id: g.id || idx + 1,
+        name: g.guide_name || g.name || g.full_name || initial6Guides[idx % 6].name,
+        district: g.district || g.location || initial6Guides[idx % 6].district,
+        license_status:
+          g.sltda_status ||
+          g.license_status ||
+          'SLTDA National Guide',
+        rating: g.rating || initial6Guides[idx % 6].rating,
+        phone: g.phone || initial6Guides[idx % 6].phone,
+        bio:
+          g.bio ||
+          g.specialties ||
+          initial6Guides[idx % 6].bio,
+        image:
+          g.image_url ||
+          g.image ||
+          g.profile_pic ||
+          fallbackPhotos[idx % fallbackPhotos.length]
+      }));
+
+      const filled = [...fetched];
+
+      for (let i = filled.length; i < 6; i++) {
+        filled.push(initial6Guides[i]);
+      }
+
+      setGuides(filled.slice(0, 6));
+    }
+  }
+
+  fetchGuides();
+}, []);
   const handleOpenBooking = (guide) => {
     setSelectedGuide(guide);
     setIsModalOpen(true);

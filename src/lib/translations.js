@@ -8,7 +8,15 @@ export const translations = {
     weatherTitle: "Sri Lanka Live Weather",
     trainTitle: "Scenic Train Routes",
     festivalsTitle: "Festivals & Cultural Events",
-    toolsTitle: "Currency & Helplines"
+    toolsTitle: "Currency & Helplines",
+    nav: {
+      destinations: "Destinations",
+      planner: "Trip Planner",
+      weather: "Weather",
+      transport: "Transport",
+      festivals: "Festivals",
+      tools: "Tools"
+    }
   },
   ta: {
     brand: "விசிட் சிலோன்",
@@ -19,7 +27,15 @@ export const translations = {
     weatherTitle: "இலங்கை நேரலை வானிலை",
     trainTitle: "ரயில் பயண வழிகள்",
     festivalsTitle: "கலாச்சார விழாக்கள்",
-    toolsTitle: "நாணய மாற்றி & அவசர உதவி"
+    toolsTitle: "நாணய மாற்றி & அவசர உதவி",
+    nav: {
+      destinations: "இலக்குகள்",
+      planner: "பயணத் திட்டம்",
+      weather: "வானிலை",
+      transport: "போக்குவரத்து",
+      festivals: "விழாக்கள்",
+      tools: "கருவிகள்"
+    }
   },
   si: {
     brand: "විසිට් සිලෝන්",
@@ -30,7 +46,15 @@ export const translations = {
     weatherTitle: "ශ්‍රී ලංකා සජීවී කාලගුණය",
     trainTitle: "දුම්රිය ගමන් මාර්ග",
     festivalsTitle: "සංස්කෘතික උත්සව",
-    toolsTitle: "මුදල් පරිවර්තකය & හදිසි ඇමතුම්"
+    toolsTitle: "මුදල් පරිවර්තකය & හදිසි ඇමතුම්",
+    nav: {
+      destinations: "ගමනාන්ත",
+      planner: "ගමන් සැලසුම",
+      weather: "කාලගුණය",
+      transport: "ප්‍රවාහනය",
+      festivals: "උත්සව",
+      tools: "මෙවලම්"
+    }
   },
   fr: {
     brand: "Visiter Ceylan",
@@ -41,6 +65,14 @@ export const translations = {
     weatherTitle: "Météo en Direct au Sri Lanka",
     trainTitle: "Itinéraires Ferroviaires",
     festivalsTitle: "Festivals & Événements",
-    toolsTitle: "Convertisseur & Numéros d'urgence"
+    toolsTitle: "Convertisseur & Numéros d'urgence",
+    nav: {
+      destinations: "Destinations",
+      planner: "Planificateur",
+      weather: "Météo",
+      transport: "Transports",
+      festivals: "Festivals",
+      tools: "Outils"
+    }
   }
 };

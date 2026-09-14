@@ -1,8 +1,20 @@
-import { MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { MapPin, ArrowRight, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import ParticleText from './ParticleText';
 import SpecularButton from './SpecularButton';
 
 export default function Hero() {
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef(null);
+
+  const toggleAudio = () => {
+    if (videoRef.current) {
+      const nextState = !isMuted;
+      videoRef.current.muted = nextState;
+      setIsMuted(nextState);
+    }
+  };
+
   const scrollToPlanner = () => {
     const section = document.getElementById('trip-planner');
     if (section) {
@@ -16,16 +28,36 @@ export default function Hero() {
       {/* Background Video with Blur and Dark Overlay */}
       <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
         <video 
+          ref={videoRef}
           src="/v2.mp4" 
           autoPlay 
           loop 
-          muted 
+          muted={isMuted}
           playsInline
           className="w-full h-full object-cover scale-105"
         />
         {/* Dark overlay so the text looks clear and readable over the blurred video */}
         <div className="absolute inset-0 bg-black/40 z-10" />
       </div>
+
+      {/* Interactive Background Music / Audio Toggle Button */}
+      <button
+        onClick={toggleAudio}
+        className="absolute bottom-6 right-6 z-30 flex items-center gap-2 bg-slate-900/90 hover:bg-emerald-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 hover:border-emerald-400 transition-all cursor-pointer backdrop-blur-md group"
+        title={isMuted ? "Enable Ambient Background Music" : "Mute Background Audio"}
+      >
+        {isMuted ? (
+          <>
+            <VolumeX size={16} className="text-slate-400 group-hover:text-white transition-colors" />
+            <span>Enable Background Sound</span>
+          </>
+        ) : (
+          <>
+            <Volume2 size={16} className="text-emerald-400 group-hover:text-white animate-pulse" />
+            <span className="text-emerald-300 group-hover:text-white">Playing Background Music 🎵</span>
+          </>
+        )}
+      </button>
 
       {/* Dark Slate Green Ambient Gradient */}
       <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-ceylon-slate/20 via-ceylon-card/40 to-transparent opacity-80 pointer-events-none z-10" />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sun, CloudRain, Cloud, Wind, Droplets, Info } from 'lucide-react';
+import SplitHeading from './SplitHeading';
 
 export default function WeatherWidget() {
   const weatherData = [
@@ -26,9 +27,9 @@ export default function WeatherWidget() {
         {/* Section Header without thermometer icon */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+            <SplitHeading as="h2" className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
               Sri Lanka Live Weather & Travel Recommendations
-            </h2>
+            </SplitHeading>
             <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
               Check real-time weather conditions across Sri Lankan tourist destinations before planning your daily activities.
             </p>

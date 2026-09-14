@@ -494,21 +494,38 @@ const MagicBento = ({
               clickEffect={clickEffect}
               enableMagnetism={enableMagnetism}
             >
-              <div className="magic-bento-card__header">
-                <div className="magic-bento-card__label">{card.label}</div>
-              </div>
-              <div className="magic-bento-card__content">
-                <h3 className="magic-bento-card__title">{card.title}</h3>
-                <p className="magic-bento-card__description">{card.description}</p>
-                {card.chips && (
-                  <div className="magic-bento-chips">
-                    {card.chips.map((chip, cIdx) => (
-                      <span key={cIdx} className="magic-bento-chip">
-                        {chip}
-                      </span>
-                    ))}
+              <div 
+                className="w-full h-full flex flex-col justify-between"
+                onClick={() => card.onCardClick && card.onCardClick(card, index)}
+              >
+                <div className="magic-bento-card__header">
+                  <div className="magic-bento-card__label">{card.label}</div>
+                  <span className="text-[10px] font-extrabold uppercase text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800/80">
+                    ⚡ Interactive Tool
+                  </span>
+                </div>
+                <div className="magic-bento-card__content">
+                  <h3 className="magic-bento-card__title">{card.title}</h3>
+                  <p className="magic-bento-card__description">{card.description}</p>
+                  {card.chips && (
+                    <div className="magic-bento-chips">
+                      {card.chips.map((chip, cIdx) => (
+                        <span key={cIdx} className="magic-bento-chip">
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-emerald-400 flex items-center gap-1">
+                      Click to open tool →
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold">
+                      Interactive ⚡
+                    </span>
                   </div>
-                )}
+                </div>
               </div>
             </ParticleCard>
           );

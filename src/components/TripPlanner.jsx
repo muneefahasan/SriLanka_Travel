@@ -1,11 +1,27 @@
-import { useState } from 'react';
-import { Calendar, Sparkles, Download, MapPin, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Sparkles, Download, MapPin, ArrowRight, Map, Eye, EyeOff, Maximize2, X, Compass, Filter } from 'lucide-react';
 import DigitalPathwaysMap from './DigitalPathwaysMap';
+import SplitHeading from './SplitHeading';
+import Reveal from './Reveal';
 
 export default function TripPlanner() {
   const [daysInput, setDaysInput] = useState(5);
   const [style, setStyle] = useState('Heritage & Nature');
   const [activeDay, setActiveDay] = useState(1);
+  const [showMap, setShowMap] = useState(true);
+  const [isFullscreenMap, setIsFullscreenMap] = useState(false);
+
+  // Lock body scroll when fullscreen map modal is active
+  useEffect(() => {
+    if (isFullscreenMap) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreenMap]);
 
   const basePool = [
     { location: "Kandy Sacred City", title: "Kandy Temple of Tooth & Botanical Gardens", desc: "Arrive at Kandy, visit Royal Botanical Gardens, Temple of Sacred Tooth Relic, and traditional Kandyan dance." },
@@ -52,20 +68,45 @@ Style: ${style}
     <div id="trip-planner" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800 relative overflow-hidden">
       <div className="max-w-7xl mx-auto">
         
-        {/* Section Header without icon */}
+        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+            <SplitHeading as="h2" className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
               Interactive Custom Itinerary Generator
-            </h2>
+            </SplitHeading>
             <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
-              Enter your exact trip duration in days and choose your travel style to generate a custom itinerary.
+              Enter your exact trip duration in days and choose your travel style. View your route on an interactive map or expand details as needed.
             </p>
+          </div>
+
+          {/* Global Map View Option Toggles */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setShowMap(!showMap)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all border cursor-pointer ${
+                showMap
+                  ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-600/30'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+            >
+              {showMap ? <EyeOff size={15} /> : <Eye size={15} />}
+              {showMap ? 'Hide Route Map' : '🗺️ View Map Mode'}
+            </button>
+
+            {showMap && (
+              <button
+                onClick={() => setIsFullscreenMap(true)}
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all border border-slate-800 cursor-pointer"
+              >
+                <Maximize2 size={15} /> Full View Map
+              </button>
+            )}
           </div>
         </div>
 
         {/* Builder Form Controls */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl mb-12 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        <Reveal delay={100}>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl mb-10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* Custom Days Input */}
           <div>
@@ -94,7 +135,7 @@ Style: ${style}
           {/* Travel Style Selection */}
           <div>
             <label className="block text-xs font-extrabold text-emerald-400 uppercase mb-3 flex items-center gap-2 tracking-wider">
-              <Sparkles size={16} className="text-emerald-400" /> Travel Preference
+              <Filter size={16} className="text-emerald-400" /> Travel Preference & Pace
             </label>
             <select
               value={style}
@@ -104,6 +145,7 @@ Style: ${style}
               <option value="Heritage & Nature">🏛️ Heritage, Nature & Tea Trails</option>
               <option value="Wildlife Safari">🐘 Wildlife Safaris & Jungle Trek</option>
               <option value="Beach & Surfing">🏄 Coastal Beaches & Surfing</option>
+              <option value="Cultural Heritage">🛕 Cultural Triangle & Temples</option>
             </select>
           </div>
 
@@ -118,9 +160,11 @@ Style: ${style}
           </div>
 
         </div>
+        </Reveal>
 
-        {/* 3D Digital Pathways Map & Details Section */}
-        <div className="bg-slate-900/90 border border-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl relative">
+        {/* Tailored Plan Section Header & Download */}
+        <Reveal delay={150}>
+        <div className="bg-slate-900/90 border border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl relative mb-8">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
             <div>
@@ -131,66 +175,204 @@ Style: ${style}
                 {totalDays}-Day Tailored Sri Lanka Itinerary
               </h3>
             </div>
-            <button
-              onClick={handleDownload}
-              className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-5 py-3 rounded-xl transition-all shadow-lg cursor-pointer"
-            >
-              <Download size={16} /> Save / Download Plan
-            </button>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-extrabold text-xs px-4 py-3 rounded-xl border border-slate-700 transition-all cursor-pointer"
+              >
+                <Map size={16} /> {showMap ? 'Hide Map' : 'View Map'}
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-5 py-3 rounded-xl transition-all shadow-lg cursor-pointer"
+              >
+                <Download size={16} /> Save / Download Plan
+              </button>
+            </div>
           </div>
 
-          {/* 3D Digital Pathways Map Graphic (Matching Screenshot 4) */}
-          <div className="mb-10">
-            <DigitalPathwaysMap 
-              daysPlan={generatedDaysPlan} 
-              activeDay={activeDay}
-              onSelectDay={(dayNum) => setActiveDay(dayNum)}
-            />
-          </div>
-
-          {/* Expanded Details Card */}
-          <div className="bg-slate-950 border border-slate-800 p-8 rounded-3xl shadow-2xl relative">
-            {(() => {
-              const activeItem = generatedDaysPlan.find(d => d.day === activeDay) || generatedDaysPlan[0];
-              return (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="bg-emerald-500/20 text-emerald-400 font-extrabold text-xs px-3 py-1 rounded-full border border-emerald-500/30">
-                      Day {activeItem.day} of {totalDays}
-                    </span>
-                    <span className="text-slate-400 text-xs font-bold flex items-center gap-1">
-                      <MapPin size={14} className="text-emerald-400" /> {activeItem.location}
-                    </span>
-                  </div>
-
-                  <h4 className="text-2xl md:text-3xl font-editorial font-extrabold text-white leading-tight">
-                    {activeItem.title}
-                  </h4>
-
-                  <p className="text-gray-300 text-base leading-relaxed font-medium bg-slate-900/80 p-5 rounded-2xl border border-slate-800">
-                    {activeItem.desc}
-                  </p>
-
-                  <div className="pt-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-400">
-                      <Sparkles size={16} /> SLTDA Verified Route
-                    </div>
-
-                    {activeDay < generatedDaysPlan.length && (
-                      <button 
-                        onClick={() => setActiveDay(prev => prev + 1)}
-                        className="inline-flex items-center gap-2 text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl transition-all cursor-pointer"
-                      >
-                        Next Day <ArrowRight size={14} />
-                      </button>
-                    )}
-                  </div>
+          {/* DUAL SPLIT LAYOUT: Half Search & Preferences Details / Half Interactive Map */}
+          <div className={`grid grid-cols-1 ${showMap ? 'lg:grid-cols-12' : 'grid-cols-1'} gap-8 items-start`}>
+            
+            {/* LEFT HALF (or FULL): Day Selector & Detailed Itinerary */}
+            <div className={`${showMap ? 'lg:col-span-6 xl:col-span-7' : 'w-full'} space-y-6`}>
+              
+              {/* Day Selector Horizontal Pills */}
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <span className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider">
+                    Select Itinerary Day ({generatedDaysPlan.length} Total)
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-bold">
+                    Click day to view on map
+                  </span>
                 </div>
-              );
-            })()}
+                
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                  {generatedDaysPlan.map((d) => (
+                    <button
+                      key={d.day}
+                      onClick={() => setActiveDay(d.day)}
+                      className={`px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer border ${
+                        activeDay === d.day
+                          ? 'bg-emerald-600 text-white border-emerald-400 shadow-lg scale-105'
+                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      Day {d.day}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Day Details Card */}
+              <div className="bg-slate-950 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl relative space-y-5">
+                {(() => {
+                  const activeItem = generatedDaysPlan.find(d => d.day === activeDay) || generatedDaysPlan[0];
+                  return (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="bg-emerald-500/20 text-emerald-400 font-extrabold text-xs px-3 py-1 rounded-full border border-emerald-500/30">
+                          Day {activeItem.day} of {totalDays}
+                        </span>
+                        <span className="text-slate-300 text-xs font-bold flex items-center gap-1.5 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+                          <MapPin size={14} className="text-emerald-400" /> {activeItem.location}
+                        </span>
+                      </div>
+
+                      <h4 className="text-2xl md:text-3xl font-editorial font-extrabold text-white leading-tight">
+                        {activeItem.title}
+                      </h4>
+
+                      <p className="text-slate-300 text-sm md:text-base leading-relaxed font-medium bg-slate-900/90 p-5 rounded-2xl border border-slate-800">
+                        {activeItem.desc}
+                      </p>
+
+                      <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-400">
+                          <Compass size={16} /> SLTDA Verified Route & Travel Guide
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {!showMap && (
+                            <button
+                              onClick={() => setShowMap(true)}
+                              className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-400 bg-emerald-950/80 hover:bg-emerald-900 px-4 py-2 rounded-xl transition-all border border-emerald-800/60 cursor-pointer"
+                            >
+                              <Map size={14} /> View on Map
+                            </button>
+                          )}
+
+                          {activeDay < generatedDaysPlan.length && (
+                            <button 
+                              onClick={() => setActiveDay(prev => prev + 1)}
+                              className="inline-flex items-center gap-2 text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+                            >
+                              Next Day <ArrowRight size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+            </div>
+
+            {/* RIGHT HALF: Interactive Digital Pathways Map (Visible when showMap is true) */}
+            {showMap && (
+              <div className="lg:col-span-6 xl:col-span-5 sticky top-24">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="text-xs font-extrabold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                    <Map size={15} /> Live Interactive Map View
+                  </span>
+                  <button
+                    onClick={() => setIsFullscreenMap(true)}
+                    className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 transition-all cursor-pointer"
+                  >
+                    <Maximize2 size={13} /> Fullscreen
+                  </button>
+                </div>
+
+                <DigitalPathwaysMap 
+                  daysPlan={generatedDaysPlan} 
+                  activeDay={activeDay}
+                  onSelectDay={(dayNum) => setActiveDay(dayNum)}
+                />
+              </div>
+            )}
+
           </div>
 
         </div>
+        </Reveal>
+
+        {/* FULLSCREEN STANDALONE MAP MODAL (Opened on click) */}
+        {isFullscreenMap && (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-4 md:p-8">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden flex flex-col h-full shadow-2xl relative">
+              
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                    <Map size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-white">Full-Screen Interactive Route Map</h3>
+                    <p className="text-xs text-emerald-400 font-medium">Sri Lanka Pathways • Day {activeDay} of {totalDays}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsFullscreenMap(false)}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-2.5 rounded-full border border-slate-700 transition-all cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Map Canvas */}
+              <div className="flex-1 w-full relative bg-slate-950">
+                <DigitalPathwaysMap 
+                  daysPlan={generatedDaysPlan} 
+                  activeDay={activeDay}
+                  onSelectDay={(dayNum) => setActiveDay(dayNum)}
+                />
+              </div>
+
+              {/* Modal Bottom Controls */}
+              <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between overflow-x-auto gap-3">
+                <div className="flex items-center gap-2">
+                  {generatedDaysPlan.map((d) => (
+                    <button
+                      key={d.day}
+                      onClick={() => setActiveDay(d.day)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                        activeDay === d.day
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      D{d.day}: {d.location.split(' ')[0]}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setIsFullscreenMap(false)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-5 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                >
+                  Return to Itinerary
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

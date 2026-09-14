@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Train, Bus, Clock, MapPin, Ticket, ShieldCheck, ChevronRight, Info, Compass, Search } from 'lucide-react';
+import SplitHeading from './SplitHeading';
 
 export default function TrainRoutes() {
   const [transportMode, setTransportMode] = useState('train'); // 'train' or 'bus'
@@ -87,9 +88,9 @@ export default function TrainRoutes() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+            <SplitHeading as="h2" className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
               Sri Lanka Transport
-            </h2>
+            </SplitHeading>
             <p className="text-gray-400 text-base md:text-lg max-w-2xl font-medium">
               Choose between Sri Lanka Railways scenic trains or CTB Highway Express buses to navigate the island.
             </p>

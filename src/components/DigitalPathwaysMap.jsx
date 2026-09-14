@@ -1,111 +1,178 @@
-import React from 'react';
-import { MapPin } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import { Navigation } from 'lucide-react';
+
+const LOCATION_COORDINATES = {
+  Kandy: [7.2906, 80.6337],
+  Sigiriya: [7.9570, 80.7603],
+  Ella: [6.8667, 81.0466],
+  Galle: [6.0535, 80.2210],
+  Jaffna: [9.6615, 80.0255],
+  Mirissa: [5.9483, 80.4716],
+  Trincomalee: [8.5874, 81.2152],
+  Colombo: [6.9271, 79.8612],
+  'Nuwara Eliya': [6.9497, 80.7891],
+  Yala: [6.3725, 81.5185],
+  Anuradhapura: [8.3114, 80.4037],
+  Dambulla: [7.8742, 80.6511],
+  Polonnaruwa: [7.9403, 81.0188],
+  'Arugam Bay': [6.8417, 81.8358],
+  Bentota: [6.4239, 80.0004],
+  Hikkaduwa: [6.1394, 80.1063],
+  Negombo: [7.2008, 79.8737]
+};
 
 export default function DigitalPathwaysMap({ daysPlan = [], activeDay = 1, onSelectDay }) {
-  // Preset 3D Map node positions on terrain mesh (matching screenshot 4)
-  const nodeCoords = [
-    { top: '22%', left: '20%', label: 'D1 - Kandy' },
-    { top: '35%', left: '42%', label: 'D2 - Sigiriya' },
-    { top: '48%', left: '68%', label: 'D3 - Ella' },
-    { top: '64%', left: '46%', label: 'D4 - Galle' },
-    { top: '78%', left: '22%', label: 'D5 - Jaffna' },
-    { top: '55%', left: '30%', label: 'D6 - Mirissa' },
-    { top: '30%', left: '80%', label: 'D7 - Trincomalee' }
-  ];
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const polylineRef = useRef(null);
 
-  return (
-    <div className="relative w-full h-[420px] rounded-3xl overflow-hidden bg-[#041019] border border-cyan-500/30 shadow-2xl flex items-center justify-center">
-      {/* 3D Wireframe Grid Mesh Background (Matching Screenshot 4) */}
-      <div 
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(0, 229, 255, 0.15) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 229, 255, 0.15) 1px, transparent 1px)
-          `,
-          backgroundSize: '36px 36px',
-          transform: 'perspective(600px) rotateX(55deg) scale(1.4)',
-          transformOrigin: 'bottom center'
-        }}
-      />
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
 
-      {/* Ambient Mountain Glow Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#041019] via-cyan-950/20 to-transparent pointer-events-none" />
+    // Initialize Leaflet map if not initialized yet
+    if (!mapInstanceRef.current) {
+      const map = L.map(mapContainerRef.current, {
+        center: [7.8731, 80.7718],
+        zoom: 7.5,
+        zoomControl: false,
+        attributionControl: false
+      });
 
-      {/* SVG Glowing Digital Pathway Line */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 420" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="pathwayGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.9" />
-          </linearGradient>
-        </defs>
+      // Dark theme tile layer (CartoDB Dark Matter)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18,
+        subdomains: 'abcd'
+      }).addTo(map);
 
-        <path
-          d="M 200,92 C 320,120 380,140 420,147 C 550,180 620,200 680,200 C 600,240 500,260 460,268 C 350,300 250,320 220,327"
-          fill="none"
-          stroke="url(#pathwayGlow)"
-          strokeWidth="4"
-          className="drop-shadow-[0_0_12px_#00e5ff]"
-        />
+      // Add custom zoom controls to bottom right
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        <path
-          d="M 200,92 C 320,120 380,140 420,147 C 550,180 620,200 680,200 C 600,240 500,260 460,268 C 350,300 250,320 220,327"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="1.5"
-          strokeDasharray="8 8"
-          className="animate-pulse opacity-80"
-        />
-      </svg>
+      mapInstanceRef.current = map;
+    }
 
-      {/* Title Overlay */}
-      <div className="absolute top-4 left-6 z-20">
-        <span className="text-[11px] font-extrabold uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/40">
-          SRI LANKA DIGITAL PATHWAYS
-        </span>
-      </div>
+    const map = mapInstanceRef.current;
 
-      {/* Map Pin Nodes Overlay (Matching Screenshot 4) */}
-      {daysPlan.map((item, idx) => {
-        const coord = nodeCoords[idx % nodeCoords.length];
-        const isActive = activeDay === item.day;
+    // Clear existing markers and polyline
+    markersRef.current.forEach((marker) => map.removeLayer(marker));
+    markersRef.current = [];
+    if (polylineRef.current) {
+      map.removeLayer(polylineRef.current);
+    }
 
-        return (
-          <div
-            key={item.day}
-            onClick={() => onSelectDay && onSelectDay(item.day)}
-            style={{ top: coord.top, left: coord.left }}
-            className={`absolute z-30 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 ${
-              isActive ? 'scale-115' : 'hover:scale-110 opacity-85'
-            }`}
-          >
-            <div className="flex flex-col items-center">
-              {/* Glowing Pin Pinpoint */}
-              <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shadow-xl ${
-                isActive
-                  ? 'bg-cyan-500 border-white text-slate-950 ring-4 ring-cyan-400/40 shadow-cyan-400/80'
-                  : 'bg-slate-900/90 border-cyan-400 text-cyan-300 shadow-cyan-950'
-              }`}>
-                <MapPin size={20} className={isActive ? 'fill-slate-950 text-slate-950' : 'text-cyan-400'} />
-                {isActive && (
-                  <span className="absolute -inset-1 rounded-full border border-cyan-400 animate-ping opacity-75" />
-                )}
-              </div>
+    if (!daysPlan || daysPlan.length === 0) return;
 
-              {/* Pin Label Box (D1 - Kandy, D2 - Sigiriya...) */}
-              <div className={`mt-1.5 px-3 py-1 rounded-lg border text-xs font-bold whitespace-nowrap backdrop-blur-md shadow-lg transition-all ${
-                isActive
-                  ? 'bg-cyan-950/95 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500/30'
-                  : 'bg-slate-900/85 border-cyan-800/60 text-slate-200'
-              }`}>
-                D{item.day} - {item.location.split(' ')[0]}
-              </div>
+    // Map locations to lat-lng coordinates
+    const routeCoords = [];
+
+    daysPlan.forEach((item) => {
+      const mainCity = item.location ? item.location.split(' ')[0] : 'Kandy';
+      const coords = LOCATION_COORDINATES[mainCity] || LOCATION_COORDINATES[item.location] || [7.2906, 80.6337];
+      routeCoords.push({ ...item, latLng: coords });
+    });
+
+    // Draw Polyline route line
+    const points = routeCoords.map((c) => c.latLng);
+    if (points.length > 1) {
+      polylineRef.current = L.polyline(points, {
+        color: '#10b981',
+        weight: 4,
+        opacity: 0.85,
+        dashArray: '8, 8',
+        lineCap: 'round'
+      }).addTo(map);
+    }
+
+    // Create custom pin icons and add markers
+    routeCoords.forEach((item) => {
+      const isActive = activeDay === item.day;
+
+      const customIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <div style="
+              width: ${isActive ? '34px' : '28px'};
+              height: ${isActive ? '34px' : '28px'};
+              background-color: ${isActive ? '#ef4444' : '#10b981'};
+              border: 3px solid #ffffff;
+              border-radius: 50%;
+              box-shadow: 0 0 15px ${isActive ? 'rgba(239, 68, 68, 0.9)' : 'rgba(16, 185, 129, 0.7)'};
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.3s ease;
+            ">
+              <span style="color: white; font-weight: 900; font-size: 11px;">D${item.day}</span>
+            </div>
+            <div style="
+              margin-top: 4px;
+              padding: 2px 8px;
+              background-color: rgba(15, 23, 42, 0.95);
+              border: 1px solid ${isActive ? '#ef4444' : '#10b981'};
+              border-radius: 6px;
+              color: #ffffff;
+              font-size: 10px;
+              font-weight: 700;
+              white-space: nowrap;
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            ">
+              ${item.location}
             </div>
           </div>
-        );
-      })}
+        `,
+        iconSize: [60, 60],
+        iconAnchor: [30, 20]
+      });
+
+      const marker = L.marker(item.latLng, { icon: customIcon }).addTo(map);
+
+      marker.on('click', () => {
+        if (onSelectDay) onSelectDay(item.day);
+      });
+
+      markersRef.current.push(marker);
+
+      if (isActive) {
+        map.panTo(item.latLng, { animate: true, duration: 1 });
+      }
+    });
+  }, [daysPlan, activeDay, onSelectDay]);
+
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 200);
+    }
+  }, [daysPlan, activeDay]);
+
+  return (
+    <div className="relative w-full h-[450px] md:h-[520px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
+      {/* Map Container */}
+      <div ref={mapContainerRef} className="w-full h-full z-10" />
+
+      {/* Header Overlay */}
+      <div className="absolute top-4 left-4 z-20 bg-slate-950/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-800 shadow-xl flex items-center gap-2">
+        <Navigation size={18} className="text-emerald-400 animate-pulse" />
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 block">
+            INTERACTIVE MAP ROUTE
+          </span>
+          <h4 className="text-xs font-bold text-white">Sri Lanka Route Pathways</h4>
+        </div>
+      </div>
+
+      {/* Footer Info Legend */}
+      <div className="absolute bottom-4 left-4 z-20 hidden sm:flex items-center gap-4 bg-slate-950/90 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800 text-[11px] text-gray-300">
+        <span className="flex items-center gap-1.5 font-semibold">
+          <span className="w-3 h-3 bg-red-500 rounded-full border border-white inline-block shadow-sm"></span> Active Stop
+        </span>
+        <span className="flex items-center gap-1.5 font-semibold">
+          <span className="w-3 h-3 bg-emerald-500 rounded-full border border-white inline-block shadow-sm"></span> Route Stop
+        </span>
+      </div>
     </div>
   );
 }

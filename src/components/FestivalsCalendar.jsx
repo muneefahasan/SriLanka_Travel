@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import SplitHeading from './SplitHeading';
 import DepthCarousel from './DepthCarousel';
 
 export default function FestivalsCalendar() {
@@ -108,14 +109,26 @@ export default function FestivalsCalendar() {
   });
 
   return (
-    <div id="festivals" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800">
-      <div className="max-w-7xl mx-auto">
+    <div id="festivals" className="w-full bg-slate-950 py-20 px-6 text-white border-t border-slate-800 relative overflow-hidden">
+      
+      {/* Full-bleed Transparent Landscape Background Overlay (Matching Screenshot 2 Sigiriya backdrop) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <img 
+          src="/destinations/sigiriya.png" 
+          alt="Sigiriya Ceylon Landscape Background" 
+          className="w-full h-full object-cover object-top opacity-25 filter brightness-90 saturate-110 scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-radial from-transparent via-slate-950/50 to-slate-950" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+          <SplitHeading as="h2" className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
             Sri Lanka Festivals & Cultural Events
-          </h2>
+          </SplitHeading>
           <p className="text-gray-400 text-base md:text-lg font-medium">
             Immerse yourself in Sri Lanka’s rich heritage with vibrant parades, light festivals, dress code guides, and traditional celebrations.
           </p>
@@ -132,7 +145,7 @@ export default function FestivalsCalendar() {
                 placeholder="Search Kandy Perahera, Vesak, Nallur..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-full text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                className="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-800 rounded-full text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm backdrop-blur-md"
               />
             </div>
 
@@ -141,7 +154,7 @@ export default function FestivalsCalendar() {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-full px-5 py-3 text-sm font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full bg-slate-900/90 border border-slate-800 rounded-full px-5 py-3 text-sm font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 cursor-pointer backdrop-blur-md"
               >
                 <option value="All"> Filter by Month: All</option>
                 {monthsList.filter(m => m !== 'All').map(m => (
@@ -160,7 +173,7 @@ export default function FestivalsCalendar() {
                 className={`px-4 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer border ${
                   selectedCategory === cat
                     ? 'bg-emerald-600 text-white border-emerald-500 shadow-md'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                    : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white backdrop-blur-md'
                 }`}
               >
                 {cat}

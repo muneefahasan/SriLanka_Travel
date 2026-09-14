@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ShieldCheck, X, CheckCircle, UserCheck } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import RotatingCards from './RotatingCards';
+import SplitHeading from './SplitHeading';
 
 export default function TourGuides() {
   const initial6Guides = [
@@ -27,6 +29,23 @@ export default function TourGuides() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Form input states
+  const [travelerName, setTravelerName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [travelDate, setTravelDate] = useState('');
+
+  // Lock body scroll when modal is active
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isModalOpen]);
+
   useEffect(() => {
     async function fetchGuides() {
       const { data, error } = await supabase.from('valid_guides').select('*');
@@ -42,7 +61,6 @@ export default function TourGuides() {
           image: g.image_url || g.image || g.profile_pic || fallbackPhotos[idx % fallbackPhotos.length]
         }));
 
-        // If fewer than 6 guides in DB, fill remaining slots with initial 6 guides so there are ALWAYS 6 distinct guides!
         if (fetched.length < 6) {
           const filled = [...fetched];
           for (let i = fetched.length; i < 6; i++) {
@@ -62,12 +80,39 @@ export default function TourGuides() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
+
+    const newBooking = {
+      id: "inq-" + Date.now(),
+      traveler_name: travelerName || "Traveler",
+      contact_phone: contactPhone || "N/A",
+      destination_name: selectedGuide?.district ? `${selectedGuide.district} Tour` : "Guided Tour",
+      start_date: travelDate || new Date().toISOString().split('T')[0],
+      headcount: 2,
+      guide_name: selectedGuide?.name || "Licensed Guide",
+      guide_type: selectedGuide?.license_status || "SLTDA National Guide",
+      status: 'Pending'
+    };
+
+    // 1. Insert into Supabase
+    try {
+      await supabase.from('bookings').insert([newBooking]);
+    } catch (_err) {}
+
+    // 2. Insert into LocalStorage
+    try {
+      const existing = JSON.parse(localStorage.getItem('ceylon_tour_bookings') || '[]');
+      localStorage.setItem('ceylon_tour_bookings', JSON.stringify([newBooking, ...existing]));
+    } catch (_err) {}
+
     setTimeout(() => {
       setSubmitted(false);
       setIsModalOpen(false);
+      setTravelerName('');
+      setContactPhone('');
+      setTravelDate('');
     }, 2200);
   };
 
@@ -77,9 +122,9 @@ export default function TourGuides() {
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-6">
-          <h2 className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
+          <SplitHeading as="h2" className="text-4xl md:text-5xl font-editorial font-extrabold text-white mb-3">
             Find a Local SLTDA Tour Guide
-          </h2>
+          </SplitHeading>
           <p className="text-gray-400 text-base md:text-lg font-medium">
             Connect directly with 6 official SLTDA certified tour guides and chauffeurs for your island journey.
           </p>
@@ -94,20 +139,23 @@ export default function TourGuides() {
           onBookGuide={handleOpenBooking}
         />
 
-        {/* Booking Modal */}
-        {isModalOpen && selectedGuide && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative text-white">
+        {/* REACT PORTAL BOOKING MODAL (Renders into document.body outside 3D perspective) */}
+        {isModalOpen && selectedGuide && createPortal(
+          <div 
+            onClick={(e) => e.target === e.currentTarget && setIsModalOpen(false)}
+            className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
+          >
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative text-white max-h-[85vh] overflow-y-auto custom-scrollbar my-auto">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+                className="absolute top-5 right-5 text-slate-400 hover:text-white bg-slate-950 p-2 rounded-full border border-slate-800 transition-all cursor-pointer z-10"
               >
-                <X size={22} />
+                <X size={20} />
               </button>
 
               {submitted ? (
                 <div className="py-10 text-center space-y-4">
-                  <CheckCircle size={48} className="text-emerald-400 mx-auto animate-bounce" />
+                  <CheckCircle size={52} className="text-emerald-400 mx-auto animate-bounce" />
                   <h3 className="text-2xl font-bold text-white">Booking Inquiry Sent!</h3>
                   <p className="text-slate-300 text-sm">
                     {selectedGuide.name} will contact you shortly on your provided phone number.
@@ -125,26 +173,47 @@ export default function TourGuides() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">Your Name</label>
-                    <input type="text" required placeholder="e.g. Sarah Jenkins" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={travelerName}
+                      onChange={(e) => setTravelerName(e.target.value)}
+                      placeholder="e.g. Sarah Jenkins" 
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
+                    />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">Contact Phone / WhatsApp</label>
-                    <input type="tel" required placeholder="+94 77 123 4567" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                    <input 
+                      type="tel" 
+                      required 
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      placeholder="+94 77 123 4567" 
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
+                    />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">Travel Date</label>
-                    <input type="date" required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                    <input 
+                      type="date" 
+                      required 
+                      value={travelDate}
+                      onChange={(e) => setTravelDate(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
+                    />
                   </div>
 
-                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 mt-4">
                     <UserCheck size={18} /> Confirm Guide Booking Request
                   </button>
                 </form>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
       </div>

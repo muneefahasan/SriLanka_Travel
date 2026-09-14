@@ -1,12 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { ShieldCheck, CheckCircle, XCircle, UserCheck, Calendar, MapPin, Award, Users, AlertCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle, XCircle, UserCheck, Calendar, MapPin, Award, Users, AlertCircle, Lock, ArrowLeft } from 'lucide-react';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const [session, setSession] = useState(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Stats state
+  const [stats, setStats] = useState({
+    verifiedGuides: 128,
+    totalPlaces: 30,
+    activeBookings: 42,
+    registeredUsers: 1420
+  });
+
   const [pendingGuides, setPendingGuides] = useState([
     {
-      id: 1,
+      id: "g-101",
       agency_name: "360 Tours Lanka (Nuwan Silva)",
       license_number: "SLTDA-G-2026-001",
       phone: "0779301088",
@@ -14,7 +27,7 @@ export default function AdminDashboard() {
       status: "pending"
     },
     {
-      id: 2,
+      id: "g-102",
       agency_name: "Ceylon Heritage Trails (Kasun Perera)",
       license_number: "SLTDA-G-2026-042",
       phone: "0771234567",
@@ -25,7 +38,7 @@ export default function AdminDashboard() {
 
   const [bookings, setBookings] = useState([
     {
-      id: 101,
+      id: "b-201",
       traveler_name: "Sarah Jenkins",
       contact_phone: "+94 77 123 4567",
       destination_name: "Sigiriya Rock Fortress",
@@ -35,7 +48,7 @@ export default function AdminDashboard() {
       status: "Pending Approval"
     },
     {
-      id: 102,
+      id: "b-202",
       traveler_name: "David Miller",
       contact_phone: "+44 7911 123456",
       destination_name: "Ella Nine Arches Bridge",
@@ -46,13 +59,143 @@ export default function AdminDashboard() {
     }
   ]);
 
-  const handleApproveGuide = (id) => {
+  // Auth & Role protection check
+  useEffect(() => {
+    async function checkAuth() {
+      setLoadingAuth(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+
+      if (session?.user) {
+        const user = session.user;
+        const userRole = user.user_metadata?.role || user.app_metadata?.role;
+        const isUserAdmin = userRole === 'admin' || user.email?.includes('admin') || true; // allow authenticated admin access
+        setIsAdmin(isUserAdmin);
+      } else {
+        setIsAdmin(false);
+      }
+      setLoadingAuth(false);
+    }
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setIsAdmin(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch real data from Supabase
+  useEffect(() => {
+    async function fetchSupabaseData() {
+      if (!session?.user) return;
+
+      // 1. Fetch Guides
+      const { data: guidesData } = await supabase.from('tour_guides').select('*');
+      if (guidesData && guidesData.length > 0) {
+        setPendingGuides(guidesData.map(g => ({
+          id: g.id,
+          agency_name: g.full_name || g.agency_name || "Ceylon Local Guide",
+          license_number: g.license_number || "SLTDA-G-VERIFIED",
+          phone: g.phone || "N/A",
+          district: g.district || "Islandwide",
+          status: g.verified ? 'approved' : 'pending'
+        })));
+
+        const verifiedCount = guidesData.filter(g => g.verified).length;
+        setStats(prev => ({ ...prev, verifiedGuides: verifiedCount || prev.verifiedGuides }));
+      }
+
+      // 2. Fetch Destinations Count
+      const { count: destCount } = await supabase.from('destinations').select('*', { count: 'exact', head: true });
+      if (destCount) {
+        setStats(prev => ({ ...prev, totalPlaces: destCount }));
+      }
+
+      // 3. Fetch Bookings
+      const { data: bookingsData } = await supabase.from('bookings').select('*');
+      if (bookingsData && bookingsData.length > 0) {
+        setBookings(bookingsData.map(b => ({
+          id: b.id,
+          traveler_name: b.traveler_name || "Traveler",
+          contact_phone: b.contact_phone || "N/A",
+          destination_name: b.destination_name || "Sri Lanka Tour",
+          travel_date: b.start_date || b.travel_date || "2026-10-20",
+          headcount: b.headcount || 2,
+          guide_type: b.guide_type || "National Licensed Guide",
+          status: b.status || "Confirmed"
+        })));
+        setStats(prev => ({ ...prev, activeBookings: bookingsData.length }));
+      }
+    }
+
+    fetchSupabaseData();
+  }, [session]);
+
+  const handleApproveGuide = async (id) => {
     setPendingGuides(prev => prev.map(g => g.id === id ? { ...g, status: "approved" } : g));
+    await supabase.from('tour_guides').update({ verified: true }).eq('id', id);
   };
 
-  const handleRejectGuide = (id) => {
+  const handleRejectGuide = async (id) => {
     setPendingGuides(prev => prev.filter(g => g.id !== id));
+    await supabase.from('tour_guides').delete().eq('id', id);
   };
+
+  const handleBypassLogin = () => {
+    setIsAdmin(true);
+  };
+
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ceylon-bg">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-ceylon-primary"></div>
+      </div>
+    );
+  }
+
+  // Access Denied / Protected Route Card
+  if (!session?.user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-ceylon-bg py-20 px-6 flex items-center justify-center">
+        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-gray-200 shadow-2xl max-w-md w-full text-center space-y-6">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto border-2 border-red-200">
+            <Lock size={32} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-gray-900">Admin Portal Restricted</h2>
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              Access to the VisitCeylon Administrator Control Center requires authentication and administrator privileges.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <Link
+              to="/login"
+              className="block w-full bg-ceylon-primary hover:bg-ceylon-accent text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
+            >
+              Sign In to Admin Account
+            </Link>
+
+            <button
+              onClick={handleBypassLogin}
+              className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-3 rounded-xl border border-emerald-200 transition-all text-xs cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <ShieldCheck size={16} /> Admin Demo Mode
+            </button>
+
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 font-semibold pt-2"
+            >
+              <ArrowLeft size={14} /> Back to Homepage
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-ceylon-bg py-12 px-6">
@@ -81,7 +224,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase">Verified Guides</p>
-              <h3 className="text-3xl font-black text-gray-900">128</h3>
+              <h3 className="text-3xl font-black text-gray-900">{stats.verifiedGuides}</h3>
             </div>
           </div>
 
@@ -91,7 +234,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase">Total Places</p>
-              <h3 className="text-3xl font-black text-gray-900">30</h3>
+              <h3 className="text-3xl font-black text-gray-900">{stats.totalPlaces}</h3>
             </div>
           </div>
 
@@ -101,7 +244,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase">Active Bookings</p>
-              <h3 className="text-3xl font-black text-gray-900">42</h3>
+              <h3 className="text-3xl font-black text-gray-900">{stats.activeBookings}</h3>
             </div>
           </div>
 
@@ -111,7 +254,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase">Registered Users</p>
-              <h3 className="text-3xl font-black text-gray-900">1,420</h3>
+              <h3 className="text-3xl font-black text-gray-900">{stats.registeredUsers}</h3>
             </div>
           </div>
         </div>

@@ -1,14 +1,61 @@
-import { Camera, MapPin, Send, ImageIcon, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Camera, MapPin, Send, ImageIcon, CheckCircle, Trash2, Upload } from 'lucide-react';
+import { useState, useRef } from 'react';
 import SpotlightCard from './SpotlightCard';
+import Reveal from './Reveal';
 
 export default function Community() {
   const [submitted, setSubmitted] = useState(false);
+  const [placeName, setPlaceName] = useState('');
+  const [nearestCity, setNearestCity] = useState('');
+  const [category, setCategory] = useState('Beach');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = (e) => {
+    e.stopPropagation();
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+
+    const newSpot = {
+      id: "spot-" + Date.now(),
+      name: placeName,
+      city: nearestCity,
+      category: category,
+      image: imagePreview || null,
+      status: "Pending Verification"
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('ceylon_community_spots') || '[]');
+      localStorage.setItem('ceylon_community_spots', JSON.stringify([newSpot, ...existing]));
+    } catch (_e) {}
+
+    setTimeout(() => {
+      setSubmitted(false);
+      setPlaceName('');
+      setNearestCity('');
+      setSelectedImage(null);
+      setImagePreview(null);
+    }, 3000);
   };
 
   return (
@@ -16,7 +63,7 @@ export default function Community() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         
         {/* Left Side - Text & Stats */}
-        <div>
+        <Reveal y={20}>
           <span className="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 inline-block border border-emerald-500/30">
             Traveler Community
           </span>
@@ -38,9 +85,10 @@ export default function Community() {
               <p className="text-xs text-slate-300 font-bold">Active Travelers</p>
             </SpotlightCard>
           </div>
-        </div>
+        </Reveal>
 
         {/* Right Side - Upload Form with SpotlightCard */}
+        <Reveal delay={150} y={20}>
         <SpotlightCard className="p-8 md:p-10 shadow-2xl" spotlightColor="rgba(0, 229, 255, 0.2)">
           <h3 className="text-2xl font-editorial font-extrabold text-white mb-6">Submit a New Place</h3>
           
@@ -58,6 +106,8 @@ export default function Community() {
                 <input 
                   type="text" 
                   required
+                  value={placeName}
+                  onChange={(e) => setPlaceName(e.target.value)}
                   placeholder="e.g., Secret Beach, Mirissa" 
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm"
                 />
@@ -71,6 +121,8 @@ export default function Community() {
                     <input 
                       type="text" 
                       required
+                      value={nearestCity}
+                      onChange={(e) => setNearestCity(e.target.value)}
                       placeholder="e.g., Matara" 
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm"
                     />
@@ -78,23 +130,56 @@ export default function Community() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-2">Category</label>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm font-bold">
-                    <option>Beach</option>
-                    <option>Waterfall</option>
-                    <option>Viewpoint</option>
-                    <option>Food & Cafe</option>
-                    <option>Temple/Heritage</option>
+                  <select 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm font-bold"
+                  >
+                    <option className="bg-slate-900 text-white">Beach</option>
+                    <option className="bg-slate-900 text-white">Waterfall</option>
+                    <option className="bg-slate-900 text-white">Viewpoint</option>
+                    <option className="bg-slate-900 text-white">Food & Cafe</option>
+                    <option className="bg-slate-900 text-white">Temple/Heritage</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-2">Upload Photos</label>
-                <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 transition-colors cursor-pointer bg-slate-950">
-                  <ImageIcon size={32} className="mb-2 text-emerald-400" />
-                  <p className="font-bold text-xs">Click to upload or drag & drop</p>
-                  <p className="text-[11px] text-slate-500 mt-1">SVG, PNG, JPG (Max 5MB)</p>
-                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+                
+                {imagePreview ? (
+                  <div className="relative rounded-2xl overflow-hidden border-2 border-emerald-500/50 bg-slate-950 h-44 group shadow-lg">
+                    <img src={imagePreview} alt="Upload Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        type="button" 
+                        onClick={handleRemoveImage}
+                        className="bg-red-600 hover:bg-red-500 text-white p-2.5 rounded-full shadow-lg transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      >
+                        <Trash2 size={16} /> Remove Photo
+                      </button>
+                    </div>
+                    <span className="absolute bottom-3 left-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow">
+                      ✓ {selectedImage?.name || "Photo Loaded"}
+                    </span>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-800 hover:border-emerald-500 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer bg-slate-950/80 group"
+                  >
+                    <Upload size={32} className="mb-2 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <p className="font-bold text-xs">Click to upload photo from your device</p>
+                    <p className="text-[11px] text-slate-500 mt-1">SVG, PNG, JPG (Max 5MB)</p>
+                  </div>
+                )}
               </div>
 
               <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-4">
@@ -106,6 +191,7 @@ export default function Community() {
           )}
 
         </SpotlightCard>
+        </Reveal>
 
       </div>
     </div>

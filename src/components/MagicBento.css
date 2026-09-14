@@ -38,7 +38,8 @@
   background: var(--background-dark);
   font-weight: 300;
   overflow: hidden;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, background-color 0.4s ease;
 
   --glow-x: 50%;
   --glow-y: 50%;
@@ -47,9 +48,10 @@
 }
 
 .magic-bento-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(16, 185, 129, 0.25);
-  border-color: rgba(16, 185, 129, 0.6);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 20px 45px rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.7);
+  background-color: #0c1527;
 }
 
 .magic-bento-card__header,

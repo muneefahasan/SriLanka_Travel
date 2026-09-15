@@ -73,18 +73,31 @@ export default function AdminDashboard() {
       fetchAdminData(); // resync on failure
     }
   };
+const handleRejectGuide = async (guideId) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      role: 'traveler',
+      is_verified: false
+    })
+    .eq('id', guideId)
+    .select('id, role, is_verified')
+    .single();
 
-  const handleRejectGuide = async (id) => {
-    setPendingGuides(prev => prev.filter(g => g.id !== id));
-    // We don't delete the auth user here — just leave them unverified/rejected.
-    // Add a `rejected` boolean column if you want to distinguish "still pending" vs "rejected".
-    const { error } = await supabase.from('profiles').update({ role: 'traveler' }).eq('id', id);
-    if (error) {
-      alert('Could not reject guide: ' + error.message);
-      fetchAdminData();
-    }
-  };
+  if (error) {
+    console.error('Reject guide failed:', error);
+    alert('Failed to reject guide: ' + error.message);
+    return;
+  }
 
+  console.log('Rejected guide profile:', data);
+
+  setPendingGuides(prev =>
+    prev.filter(guide => guide.id !== guideId)
+  );
+
+  alert('Guide rejected successfully');
+};
   const handleApprovePlace = async (id) => {
     setPendingPlaces(prev => prev.filter(p => p.id !== id));
     const { error } = await supabase.from('destinations').update({ status: 'approved' }).eq('id', id);

@@ -179,9 +179,15 @@ export default function TrainRoutes() {
                   <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
                     <Clock size={14} className="text-emerald-400" /> Duration: {activeJourney.duration}
                   </span>
-                  <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-2">
-                    <Ticket size={14} /> Check Ticket Availability
-                  </button>
+                  <button
+  onClick={() => {
+    alert('Ticket availability feature is coming soon.');
+  }}
+  className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold transition"
+>
+  <Ticket size={14} />
+  Check Ticket Availability
+</button>
                 </div>
               </div>
 

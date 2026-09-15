@@ -45,62 +45,47 @@ export default function TourGuides() {
       document.body.style.overflow = 'auto';
     };
   }, [isModalOpen]);
-
- useEffect(() => {
+useEffect(() => {
   async function fetchGuides() {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const { data, error } = await supabase.rpc(
+      'get_public_verified_guides'
+    );
 
-    // Only fetch database guides for logged-in users.
-    // Logged-out visitors will see the built-in guide cards.
-    if (!user) {
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('valid_guides')
-      .select('*');
+    console.log('Approved guides from Supabase:', data);
+    console.log('Guide fetch error:', error);
 
     if (error) {
-      console.error('Failed to load guides:', error);
+      console.error('Failed to load approved guides:', error);
       return;
     }
 
-    if (data && data.length > 0) {
-      const fetched = data.map((g, idx) => ({
-        id: g.id || idx + 1,
-        name: g.guide_name || g.name || g.full_name || initial6Guides[idx % 6].name,
-        district: g.district || g.location || initial6Guides[idx % 6].district,
-        license_status:
-          g.sltda_status ||
-          g.license_status ||
-          'SLTDA National Guide',
-        rating: g.rating || initial6Guides[idx % 6].rating,
-        phone: g.phone || initial6Guides[idx % 6].phone,
-        bio:
-          g.bio ||
-          g.specialties ||
-          initial6Guides[idx % 6].bio,
-        image:
-          g.image_url ||
-          g.image ||
-          g.profile_pic ||
-          fallbackPhotos[idx % fallbackPhotos.length]
-      }));
+    const approvedGuides = (data || []).map((g, idx) => ({
+      id: g.id,
+      name: g.full_name || 'Licensed Guide',
+      district: g.district || 'Sri Lanka',
+      license_status: 'SLTDA Verified Guide',
+      rating: g.rating || 4.9,
+      phone: '',
+      bio: g.languages?.length
+        ? `Verified SLTDA guide. Languages: ${g.languages.join(', ')}.`
+        : 'Verified SLTDA tour guide.',
+      image:
+        g.image_url ||
+        fallbackPhotos[idx % fallbackPhotos.length]
+    }));
 
-      const filled = [...fetched];
+    console.log('Final guides for 3D cards:', approvedGuides);
 
-      for (let i = filled.length; i < 6; i++) {
-        filled.push(initial6Guides[i]);
-      }
-
-      setGuides(filled.slice(0, 6));
-    }
+    setGuides([
+      ...initial6Guides,
+      ...approvedGuides
+    ]);
   }
 
   fetchGuides();
 }, []);
+
+
   const handleOpenBooking = (guide) => {
     setSelectedGuide(guide);
     setIsModalOpen(true);
@@ -152,7 +137,7 @@ export default function TourGuides() {
             Find a Local SLTDA Tour Guide
           </SplitHeading>
           <p className="text-gray-400 text-base md:text-lg font-medium">
-            Connect directly with 6 official SLTDA certified tour guides and chauffeurs for your island journey.
+           Connect with verified SLTDA tour guides and chauffeurs for your island journey.
           </p>
         </div>
 

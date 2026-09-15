@@ -15,36 +15,58 @@ export default function LenticularCarousel() {
   const categories = ["All", "Heritage", "Beach & Coastal", "Nature & Wildlife", "Mountain & Hill Country", "Cultural & Heritage", "Adventure"];
 
   // Fetch dynamically from Supabase database if available, merging fields smoothly by name & slug
-  useEffect(() => {
-    async function fetchDestinations() {
-      try {
-        const { data, error } = await supabase.from('destinations').select('*');
-        if (!error && data && data.length > 0) {
-          setDestinations(prevList => {
-            return prevList.map(baseItem => {
-              // Match Supabase record by slug or name
-              const dbMatch = data.find(
-                db => (db.slug && db.slug.toLowerCase() === baseItem.slug.toLowerCase()) ||
-                      (db.name && db.name.toLowerCase().includes(baseItem.slug.toLowerCase()))
-              );
+ useEffect(() => {
+  async function fetchDestinations() {
+    try {
+      const { data, error } = await supabase
+        .from('destinations')
+        .select('*')
+        .eq('status', 'approved');
 
-              if (dbMatch) {
-                return {
-                  ...baseItem,
-                  ...dbMatch,
-                  slug: baseItem.slug // Always keep the clean string slug for routing!
-                };
-              }
-              return baseItem;
-            });
-          });
-        }
-      } catch (_e) {
-        // Fallback to local DESTINATIONS_DATA if Supabase offline
+      if (error) {
+        console.error('Failed to load destinations:', error);
+        return;
       }
+
+      if (!data) return;
+
+      setDestinations(prevList => {
+        const result = [...prevList];
+
+        data.forEach(dbItem => {
+          const existingIndex = result.findIndex(
+            item =>
+              item.name?.trim().toLowerCase() ===
+              dbItem.name?.trim().toLowerCase()
+          );
+
+          if (existingIndex !== -1) {
+            // Existing destination → only update its DB image/details
+            result[existingIndex] = {
+              ...result[existingIndex],
+              ...dbItem,
+              image: dbItem.image_url || result[existingIndex].image,
+              slug: result[existingIndex].slug || dbItem.id
+            };
+          } else {
+            // New approved community destination → add it
+            result.push({
+              ...dbItem,
+              image: dbItem.image_url,
+              slug: String(dbItem.id)
+            });
+          }
+        });
+
+        return result;
+      });
+    } catch (error) {
+      console.error('Destination loading error:', error);
     }
-    fetchDestinations();
-  }, []);
+  }
+
+  fetchDestinations();
+}, []);
 
   // Filtered list based on search and category
   const filtered = destinations.filter(item => {
@@ -159,7 +181,7 @@ export default function LenticularCarousel() {
 
             return (
               <div
-                key={item.id || index}
+                key={`${item.id || item.slug || item.name}-${index}`}
                 onClick={() => setActiveIndex(index)}
                 style={{
                   transform: transformStyle,
@@ -201,7 +223,7 @@ export default function LenticularCarousel() {
 
                   {isActive && (
                     <Link 
-                      to={`/destination/${item.slug || item.id}`}
+                      to={`/destination/${item.id}`}
                       onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md w-fit cursor-pointer"
                     >

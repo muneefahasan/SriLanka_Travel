@@ -647,7 +647,7 @@ export default function DestinationDetail() {
                           )?.license_number
                         }
                       </div>
-                    )}
+                    )} 
                   </div>
 
                   {/* NAME */}

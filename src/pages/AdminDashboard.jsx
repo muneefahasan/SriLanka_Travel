@@ -42,11 +42,11 @@ export default function AdminDashboard() {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'approved');
 
-    const { data: bookingsData } = await supabase
-      .from('bookings')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20);
+    const { data: bookingsData, error: bookingsError } = await supabase
+  .from('bookings')
+  .select('*')
+  .order('id', { ascending: false })
+  .limit(20);
     setBookings(bookingsData || []);
 
     const { count: userCount } = await supabase

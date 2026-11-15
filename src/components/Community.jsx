@@ -1,11 +1,13 @@
-import { MapPin, Send, CheckCircle, Trash2, Upload } from 'lucide-react';
+import { MapPin, Send, CheckCircle, Trash2, Upload, AlertCircle, LogIn } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import SpotlightCard from './SpotlightCard';
 import Reveal from './Reveal';
 import { supabase } from '../lib/supabaseClient';
 
 export default function Community() {
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState('');
   const [placeName, setPlaceName] = useState('');
   const [nearestCity, setNearestCity] = useState('');
   const [category, setCategory] = useState('Beach');
@@ -34,6 +36,7 @@ export default function Community() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
 
     try {
       // 1. Make sure traveler is logged in
@@ -43,23 +46,23 @@ export default function Community() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        alert('Please login as a traveler before submitting a new place.');
+        setFormError('not-logged-in');
         return;
       }
 
       if (!selectedImage) {
-        alert('Please upload a photo of the place.');
+        setFormError('Please upload a photo of the place.');
         return;
       }
 
       // 2. Validate image
       if (!selectedImage.type.startsWith('image/')) {
-        alert('Please select a valid image file.');
+        setFormError('Please select a valid image file (JPG, PNG, etc.).');
         return;
       }
 
       if (selectedImage.size > 5 * 1024 * 1024) {
-        alert('Photo must be less than 5MB.');
+        setFormError('Photo must be less than 5MB. Please choose a smaller file.');
         return;
       }
 
@@ -75,8 +78,7 @@ export default function Community() {
         .upload(fileName, selectedImage);
 
       if (uploadError) {
-        console.error('Image upload error:', uploadError);
-        alert('Photo upload failed: ' + uploadError.message);
+        setFormError('Photo upload failed: ' + uploadError.message);
         return;
       }
 
@@ -95,7 +97,7 @@ export default function Community() {
             name: placeName.trim(),
             location: nearestCity.trim(),
             category: category,
-            description: `A place recommended by a VisitCeylon traveler.`,
+           description: `A place recommended by an XplorSL traveler.`,
             image_url: publicUrl,
             status: 'pending',
             submitted_by: user.id
@@ -103,14 +105,12 @@ export default function Community() {
         ]);
 
       if (insertError) {
-        console.error('Destination insert error:', insertError);
-
         // Remove uploaded image if database insert fails
         await supabase.storage
           .from('destination-images')
           .remove([fileName]);
 
-        alert('Could not submit the place: ' + insertError.message);
+        setFormError('Could not submit the place: ' + insertError.message);
         return;
       }
 
@@ -130,9 +130,8 @@ export default function Community() {
         }
       }, 3000);
 
-    } catch (error) {
-      console.error('Unexpected submission error:', error);
-      alert('Something went wrong. Please try again.');
+    } catch {
+      setFormError('Something went wrong. Please try again.');
     }
   };
 
@@ -149,7 +148,7 @@ export default function Community() {
             Found a Hidden Gem <br />in Sri Lanka?
           </h2>
           <p className="text-lg text-slate-300 mb-8 font-medium leading-relaxed">
-            Did you discover a secret waterfall, an untouched beach, or a cozy local cafe? Share it with the VisitCeylon community! Once verified by our local guides, your spot will be featured on our interactive map.
+           Did you discover a secret waterfall, an untouched beach, or a cozy local cafe? Share it with the XplorSL community! Once verified by our local guides, your spot will be featured on our interactive map.
           </p>
           
           <div className="grid grid-cols-2 gap-4">
@@ -174,10 +173,29 @@ export default function Community() {
               <div className="py-12 text-center space-y-4">
                 <CheckCircle size={48} className="text-emerald-400 mx-auto animate-bounce" />
                 <h4 className="text-2xl font-bold text-white">Place Submitted for Review!</h4>
-                <p className="text-slate-300 text-sm">Thank you for contributing to the VisitCeylon community.</p>
+               <p className="text-slate-300 text-sm">Thank you for contributing to the XplorSL community.</p>
               </div>
             ) : (
               <form className="space-y-5" onSubmit={handleSubmit}>
+
+                {/* Inline Error Message (replaces alert()) */}
+                {formError === 'not-logged-in' ? (
+                  <div className="flex items-start gap-3 bg-red-950/60 border border-red-500/40 rounded-xl px-4 py-3">
+                    <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <p className="text-red-300 font-bold">Login Required</p>
+                      <p className="text-red-400/80 text-xs mt-0.5">You must be logged in to submit a place.</p>
+                      <Link to="/login" state={{ from: '/#community' }} className="inline-flex items-center gap-1 mt-2 text-emerald-400 font-bold text-xs hover:underline">
+                        <LogIn size={13} /> Login / Sign Up →
+                      </Link>
+                    </div>
+                  </div>
+                ) : formError ? (
+                  <div className="flex items-center gap-3 bg-red-950/60 border border-red-500/40 rounded-xl px-4 py-3">
+                    <AlertCircle size={16} className="text-red-400 shrink-0" />
+                    <p className="text-red-300 text-sm font-medium">{formError}</p>
+                  </div>
+                ) : null}
                 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-2">Name of the Place</label>

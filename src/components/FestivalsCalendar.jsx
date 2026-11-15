@@ -68,8 +68,8 @@ export default function FestivalsCalendar() {
     {
       id: 6,
       title: "Eid al-Fitr Celebration",
-      date: "April", // This will need to be adjusted annually based on the lunar calendar
-      month: "April", // Example based on 2024 dates
+      date: "March 20",
+      month: "March",
       location: "Grand Mosque, Colombo 12",
       category: "Islamic Religious Festival",
       image: "/festivals/eid.png", 
@@ -79,10 +79,10 @@ export default function FestivalsCalendar() {
     }
     ,
     {
-    id: 8,
+      id: 7,
       title: "Easter Vigil Mass",
-      date: "March / April", // This will need to be adjusted annually
-      month: "March", // Example based on 2024 dates
+      date: "April 4",
+      month: "April",
       location: "St. Lucia's Cathedral, Kotahena",
       category: "Christian Religious Service",
       image: "/festivals/easter.png", 
@@ -96,8 +96,8 @@ export default function FestivalsCalendar() {
   const [selectedMonth, setSelectedMonth] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const monthsList = ['All', 'January', 'April', 'May', 'August', 'November'];
-  const categories = ['All', 'Buddhist Cultural Parade', 'Religious Festival of Lights', 'Traditional New Year', 'Hindu Religious Festival'];
+  const monthsList = ['All', 'January', 'March', 'April', 'May', 'August', 'September', 'November'];
+  const categories = ['All', 'Buddhist Cultural Parade', 'Religious Festival of Lights', 'Traditional New Year', 'Hindu Religious Festival', 'Hindu Cultural Festival', 'Islamic Religious Festival', 'Christian Religious Service'];
 
   const filteredFestivals = festivalsData.filter(f => {
     const matchesMonth = selectedMonth === 'All' || f.month === selectedMonth;

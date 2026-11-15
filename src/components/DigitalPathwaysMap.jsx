@@ -19,7 +19,13 @@ const LOCATION_COORDINATES = {
   'Arugam Bay': [6.8417, 81.8358],
   Bentota: [6.4239, 80.0004],
   Hikkaduwa: [6.1394, 80.1063],
-  Negombo: [7.2008, 79.8737]
+  Negombo: [7.2008, 79.8737],
+    Minneriya: [8.0380, 80.9010],
+  Udawalawe: [6.4740, 80.8880],
+  Wilpattu: [8.4167, 80.0833],
+  Bundala: [6.1830, 81.2160],
+  Unawatuna: [6.0100, 80.2490],
+  Kalpitiya: [8.2330, 79.7660]
 };
 
 export default function DigitalPathwaysMap({ daysPlan = [], activeDay = 1, onSelectDay }) {
@@ -37,14 +43,15 @@ export default function DigitalPathwaysMap({ daysPlan = [], activeDay = 1, onSel
         center: [7.8731, 80.7718],
         zoom: 7.5,
         zoomControl: false,
-        attributionControl: false
+        attributionControl: true
       });
 
-      // Dark theme tile layer (CartoDB Dark Matter)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
-        subdomains: 'abcd'
-      }).addTo(map);
+    // OpenStreetMap standard tile layer (no API key required)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+}).addTo(map);
 
       // Add custom zoom controls to bottom right
       L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -67,8 +74,22 @@ export default function DigitalPathwaysMap({ daysPlan = [], activeDay = 1, onSel
     const routeCoords = [];
 
     daysPlan.forEach((item) => {
-      const mainCity = item.location ? item.location.split(' ')[0] : 'Kandy';
-      const coords = LOCATION_COORDINATES[mainCity] || LOCATION_COORDINATES[item.location] || [7.2906, 80.6337];
+    const location = item.location?.trim() || '';
+
+const matchedLocation = Object.keys(LOCATION_COORDINATES)
+  .sort((a, b) => b.length - a.length)
+  .find((key) =>
+    location.toLowerCase().includes(key.toLowerCase())
+  );
+
+const coords = matchedLocation
+  ? LOCATION_COORDINATES[matchedLocation]
+  : null;
+
+if (!coords) {
+  console.warn(`Coordinates not found for: ${location}`);
+  return;
+}
       routeCoords.push({ ...item, latLng: coords });
     });
 
@@ -140,13 +161,25 @@ export default function DigitalPathwaysMap({ daysPlan = [], activeDay = 1, onSel
     });
   }, [daysPlan, activeDay, onSelectDay]);
 
-  useEffect(() => {
+ useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    mapInstanceRef.current?.invalidateSize();
+  }, 200);
+
+  return () => clearTimeout(timeoutId);
+}, [daysPlan, activeDay]);
+
+useEffect(() => {
+  return () => {
     if (mapInstanceRef.current) {
-      setTimeout(() => {
-        mapInstanceRef.current?.invalidateSize();
-      }, 200);
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
     }
-  }, [daysPlan, activeDay]);
+
+    markersRef.current = [];
+    polylineRef.current = null;
+  };
+}, []);
 
   return (
     <div className="relative w-full h-[450px] md:h-[520px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">

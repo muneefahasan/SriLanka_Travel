@@ -21,9 +21,66 @@ export default function TouristTools() {
   }, [activeModal]);
 
   // Currency Converter State
+ 
+  // Currency Converter State
   const [currencyAmount, setCurrencyAmount] = useState(100);
   const [currencyType, setCurrencyType] = useState('USD');
-  const rates = { USD: 305, EUR: 332, GBP: 395, AUD: 202, INR: 3.65 };
+
+  const [rates, setRates] = useState(null);
+  const [rateLoading, setRateLoading] = useState(true);
+  const [rateError, setRateError] = useState('');
+  const [lastUpdated, setLastUpdated] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchRates = async () => {
+      try {
+        setRateLoading(true);
+        setRateError('');
+
+        const response = await fetch(
+          'https://open.er-api.com/v6/latest/USD',
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error('Unable to fetch exchange rates.');
+        }
+
+        const data = await response.json();
+
+        if (
+          data.result !== 'success' ||
+          !Number.isFinite(data.rates?.LKR) ||
+          !Number.isFinite(data.rates?.[currencyType])
+        ) {
+          throw new Error('Exchange rate data is unavailable.');
+        }
+
+        setRates(data.rates);
+        setLastUpdated(data.time_last_update_utc || '');
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setRateError(error.message || 'Unable to load exchange rates.');
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setRateLoading(false);
+        }
+      }
+    };
+
+    fetchRates();
+
+    return () => controller.abort();
+  }, []);
+
+  const lkrRate =
+    rates?.[currencyType] > 0 && rates?.LKR > 0
+      ? rates.LKR / rates[currencyType]
+      : null;
+
 
   // Transit Estimator State
   const [transitKm, setTransitKm] = useState(10);
@@ -55,9 +112,9 @@ export default function TouristTools() {
     {
       color: '#0b1120',
       title: '💱 Currency Exchange (LKR)',
-      description: 'Official exchange rate breakdown & live LKR converter calculator for foreign tourists.',
+      description: 'Approximate exchange rates & LKR converter calculator for foreign tourists. Rates are indicative — check your bank for live rates.',
       label: 'Finance',
-      chips: ['1 USD = 305 LKR', '1 EUR = 332 LKR', '1 GBP = 395 LKR', '1 INR = 3.65 LKR'],
+      chips: ['~1 USD ≈ 305 LKR', '~1 EUR ≈ 332 LKR', '~1 GBP ≈ 395 LKR', '~1 INR ≈ 3.65 LKR'],
       onCardClick: handleCardClick
     },
     {
@@ -154,57 +211,125 @@ export default function TouristTools() {
               </button>
 
               {/* 1. CURRENCY EXCHANGE CALCULATOR TOOL */}
-              {activeModal === 'currency' && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
-                      <DollarSign size={22} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-editorial font-extrabold text-white">Live LKR Currency Calculator</h3>
-                      <p className="text-xs text-emerald-400 font-bold">Official Bank & BIA Airport Counter Exchange Rates</p>
-                    </div>
-                  </div>
+             
+{activeModal === 'currency' && (
+  <div className="space-y-6">
+    {/* Header */}
+    <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+      <div className="w-10 h-10 rounded-2xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+        <DollarSign size={22} />
+      </div>
 
-                  <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-400 mb-1">Enter Foreign Amount</label>
-                      <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5">
-                        <input
-                          type="number"
-                          min="1"
-                          value={currencyAmount}
-                          onChange={(e) => setCurrencyAmount(Number(e.target.value) || 0)}
-                          className="w-full bg-transparent text-white font-extrabold text-xl focus:outline-none"
-                        />
-                        <select
-                          value={currencyType}
-                          onChange={(e) => setCurrencyType(e.target.value)}
-                          className="bg-slate-800 text-emerald-400 font-extrabold text-sm px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none cursor-pointer"
-                        >
-                          <option value="USD">USD ($)</option>
-                          <option value="EUR">EUR (€)</option>
-                          <option value="GBP">GBP (£)</option>
-                          <option value="AUD">AUD ($)</option>
-                          <option value="INR">INR (₹)</option>
-                        </select>
-                      </div>
-                    </div>
+      <div>
+        <h3 className="text-xl font-editorial font-extrabold text-white">
+          LKR Currency Calculator
+        </h3>
+        <p className="text-xs text-emerald-400 font-bold">
+          Daily Reference Exchange Rates
+        </p>
+      </div>
+    </div>
 
-                    <div className="bg-emerald-950/60 border border-emerald-500/40 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Equivalent Sri Lankan Rupee</span>
-                      <div className="text-3xl font-editorial font-extrabold text-white">
-                        {(currencyAmount * (rates[currencyType] || 305)).toLocaleString()} <span className="text-emerald-400 text-lg">LKR</span>
-                      </div>
-                      <p className="text-[11px] text-slate-400">1 {currencyType} = {rates[currencyType]} LKR</p>
-                    </div>
-                  </div>
+    {/* Currency Input */}
+    <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+      <div>
+        <label className="block text-xs font-bold text-slate-400 mb-1">
+          Enter Foreign Amount
+        </label>
 
-                  <div className="text-xs text-slate-400 space-y-1 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <p>💡 <strong>Pro Tip:</strong> Currency exchange counters are open 24/7 at Bandaranaike International Airport (BIA) arrival hall.</p>
-                  </div>
-                </div>
-              )}
+        <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5">
+          <input
+            type="number"
+            min="0"
+            value={currencyAmount}
+            onChange={(e) =>
+              setCurrencyAmount(Math.max(0, Number(e.target.value) || 0))
+            }
+            className="w-full bg-transparent text-white font-extrabold text-xl focus:outline-none"
+          />
+
+          <select
+            value={currencyType}
+            onChange={(e) => setCurrencyType(e.target.value)}
+            className="bg-slate-800 text-emerald-400 font-extrabold text-sm px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none cursor-pointer"
+          >
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="AUD">AUD ($)</option>
+            <option value="INR">INR (₹)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Conversion Result */}
+      <div className="bg-emerald-950/60 border border-emerald-500/40 p-4 rounded-xl text-center space-y-2">
+        <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+          Equivalent Sri Lankan Rupee
+        </span>
+
+        <div className="text-3xl font-editorial font-extrabold text-white">
+          {rateLoading
+            ? 'Loading...'
+            : lkrRate !== null
+              ? (currencyAmount * lkrRate).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+              : 'Rate unavailable'}
+
+          <span className="text-emerald-400 text-lg"> LKR</span>
+        </div>
+
+        <p className="text-[11px] text-slate-400">
+          1 {currencyType} = {lkrRate !== null ? lkrRate.toFixed(4) : '—'} LKR
+        </p>
+
+        {rateLoading && (
+          <p className="text-xs text-slate-400">
+            Fetching latest rates...
+          </p>
+        )}
+
+        {rateError && (
+          <p role="alert" className="text-xs text-red-400">
+            {rateError}
+          </p>
+        )}
+
+        {lastUpdated && !rateLoading && (
+          <p className="text-xs text-slate-400">
+            Last updated: {new Date(lastUpdated).toLocaleString()}
+          </p>
+        )}
+
+        <a
+          href="https://www.exchangerate-api.com/docs/free"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-emerald-400 underline"
+        >
+          Rates By Exchange Rate API
+        </a>
+
+        {/* Rate Disclaimer */}
+        <p className="text-[11px] text-slate-400 pt-3 border-t border-emerald-800/50">
+          Indicative exchange rate only. Actual bank and exchange
+          counter rates may vary. Additional fees may apply.
+        </p>
+      </div>
+    </div>
+
+    {/* Pro Tip */}
+    <div className="text-xs text-slate-400 space-y-1 bg-slate-950 p-4 rounded-xl border border-slate-800">
+      <p>
+        💡 <strong>Pro Tip:</strong> Currency exchange counters are open
+        24/7 at Bandaranaike International Airport (BIA) arrival hall.
+      </p>
+    </div>
+  </div>
+)}
+
 
               {/* 2. EMERGENCY HOTLINES TOOL */}
               {activeModal === 'emergency' && (

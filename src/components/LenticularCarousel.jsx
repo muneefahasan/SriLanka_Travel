@@ -24,7 +24,6 @@ export default function LenticularCarousel() {
         .eq('status', 'approved');
 
       if (error) {
-        console.error('Failed to load destinations:', error);
         return;
       }
 
@@ -60,8 +59,8 @@ export default function LenticularCarousel() {
 
         return result;
       });
-    } catch (error) {
-      console.error('Destination loading error:', error);
+    } catch {
+      // silently ignore loading errors
     }
   }
 

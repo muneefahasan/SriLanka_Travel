@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    brand: "VisitCeylon",
+  brand: "XplorSL",
     searchPlaceholder: "Plan with AI (e.g. Train to Ella...)",
     loginJoin: "Login",
     logout: "Logout",

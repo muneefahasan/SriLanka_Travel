@@ -26,3 +26,12 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Supabase local files
+supabase/.temp/
+
+# Local editor settings
+.vscode/
+
+# Backup files
+*.backup
+*.backup.jsx

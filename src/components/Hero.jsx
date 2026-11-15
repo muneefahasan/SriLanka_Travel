@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, ArrowRight, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import ParticleText from './ParticleText';
 import SpecularButton from './SpecularButton';
 
 export default function Hero() {
+  const navigate = useNavigate();
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
 
@@ -34,7 +36,7 @@ export default function Hero() {
           loop 
           muted={isMuted}
           playsInline
-          className="w-full h-full object-cover scale-105"
+          className="w-full h-full object-cover object-center"
         />
         {/* Dark overlay so the text looks clear and readable over the blurred video */}
         <div className="absolute inset-0 bg-black/40 z-10" />
@@ -91,44 +93,71 @@ export default function Hero() {
            {/* Visual Glow Aura */}
            <div className="absolute inset-0 bg-ceylon-light/25 rounded-full blur-3xl animate-pulse"></div>
            
-           {/* 3D Illustrated Sri Lanka Map Image */}
+           {/* 3D Illustrated Sri Lanka Map Image & Anchored Pins Container */}
            <div className="relative w-[92%] h-[92%] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/80 transform lg:rotate-2 hover:rotate-0 transition-all duration-700 ease-in-out group backdrop-blur-md bg-white/10">
              <img 
-                src="/image2.png" 
+                src="/sl.png" 
                 alt="Sri Lanka 3D Map Showcase" 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
              />
              <div className="absolute inset-0 bg-gradient-to-t from-ceylon-slate/40 via-transparent to-transparent pointer-events-none" />
-           </div>
-           
-           {/* Interactive Pin 1 - Sigiriya */}
-           <div className="absolute top-[35%] left-[45%] group cursor-pointer z-30">
-              <div className="bg-white p-2.5 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent">
-                <MapPin size={22} className="text-ceylon-accent" />
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-ceylon-slate text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl pointer-events-none">
-                  🏰 Sigiriya Ancient Rock
-              </div>
-           </div>
 
-           {/* Interactive Pin 2 - Ella */}
-           <div className="absolute top-[62%] right-[32%] group cursor-pointer z-30">
-              <div className="bg-white p-2.5 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent" style={{ animationDelay: '0.4s' }}>
-                <MapPin size={22} className="text-ceylon-accent" />
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-ceylon-slate text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl pointer-events-none">
-                  🚆 Nine Arches & Ella
-              </div>
-           </div>
+             {/* Interactive Pin 1 - Sigiriya */}
+             <div 
+                onClick={() => navigate('/destination/sigiriya')}
+                className="absolute top-[38%] left-[46%] -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-30 transition-transform hover:scale-125"
+             >
+                <div className="bg-white p-2 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent">
+                  <MapPin size={20} className="text-ceylon-accent" />
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900/95 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-200 whitespace-nowrap shadow-2xl border border-slate-700 pointer-events-none flex flex-col items-center gap-0.5">
+                    <span>🏰 Sigiriya Ancient Rock</span>
+                    <span className="text-[10px] text-emerald-400 font-normal">Click to open map 🗺️</span>
+                </div>
+             </div>
 
-           {/* Interactive Pin 3 - Galle Fort */}
-           <div className="absolute bottom-[18%] left-[28%] group cursor-pointer z-30">
-              <div className="bg-white p-2.5 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent" style={{ animationDelay: '0.2s' }}>
-                <MapPin size={22} className="text-ceylon-accent" />
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-ceylon-slate text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl pointer-events-none">
-                  🌊 Galle Dutch Fort
-              </div>
+             {/* Interactive Pin 2 - Kandy */}
+             <div 
+                onClick={() => navigate('/destination/kandy')}
+                className="absolute top-[52%] left-[44%] -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-30 transition-transform hover:scale-125"
+             >
+                <div className="bg-white p-2 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent" style={{ animationDelay: '0.2s' }}>
+                  <MapPin size={20} className="text-ceylon-accent" />
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900/95 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-200 whitespace-nowrap shadow-2xl border border-slate-700 pointer-events-none flex flex-col items-center gap-0.5">
+                    <span>👑 Kandy Temple</span>
+                    <span className="text-[10px] text-emerald-400 font-normal">Click to open map 🗺️</span>
+                </div>
+             </div>
+
+             {/* Interactive Pin 3 - Ella */}
+             <div 
+                onClick={() => navigate('/destination/ella')}
+                className="absolute top-[64%] left-[62%] -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-30 transition-transform hover:scale-125"
+             >
+                <div className="bg-white p-2 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent" style={{ animationDelay: '0.4s' }}>
+                  <MapPin size={20} className="text-ceylon-accent" />
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900/95 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-200 whitespace-nowrap shadow-2xl border border-slate-700 pointer-events-none flex flex-col items-center gap-0.5">
+                    <span>🚆 Nine Arches & Ella</span>
+                    <span className="text-[10px] text-emerald-400 font-normal">Click to open map 🗺️</span>
+                </div>
+             </div>
+
+             {/* Interactive Pin 4 - Galle Fort */}
+             <div 
+                onClick={() => navigate('/destination/galle')}
+                className="absolute top-[82%] left-[34%] -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-30 transition-transform hover:scale-125"
+             >
+                <div className="bg-white p-2 rounded-full shadow-2xl animate-bounce border-2 border-ceylon-accent" style={{ animationDelay: '0.6s' }}>
+                  <MapPin size={20} className="text-ceylon-accent" />
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900/95 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-200 whitespace-nowrap shadow-2xl border border-slate-700 pointer-events-none flex flex-col items-center gap-0.5">
+                    <span>🌊 Galle Dutch Fort</span>
+                    <span className="text-[10px] text-emerald-400 font-normal">Click to open map 🗺️</span>
+                </div>
+             </div>
+
            </div>
 
         </div>

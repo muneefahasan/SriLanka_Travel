@@ -14,9 +14,24 @@ import {
   Ticket,
   UserCheck,
   Play,
-  Loader2
+  Loader2,
+  Users,
+  FileText,
+  ClipboardList,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { DESTINATIONS_DATA } from '../data/destinationsData';
+
+// ── Task 8 helper: one row in the booking summary ────────────────────────────
+function SummaryRow({ label, value }) {
+  return (
+    <div className="flex gap-2">
+      <span className="text-slate-500 w-28 flex-shrink-0">{label}:</span>
+      <span className="text-white font-semibold break-words">{value}</span>
+    </div>
+  );
+}
 
 export default function DestinationDetail() {
   const { id } = useParams();
@@ -28,6 +43,7 @@ export default function DestinationDetail() {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isTrainModalOpen, setIsTrainModalOpen] = useState(false);
   const [bookingSubmitted, setBookingSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Guide data
   const [guides, setGuides] = useState([]);
@@ -38,10 +54,16 @@ export default function DestinationDetail() {
   const [travelerName, setTravelerName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [travelDate, setTravelDate] = useState('');
-  const [headcount, setHeadcount] = useState(2);
+  const [headcount, setHeadcount] = useState(1); // Task 5: not hardcoded to 2
   const [guideType, setGuideType] = useState(
     'National Licensed Guide'
   );
+
+  // Task 7 – Special requests field
+  const [specialRequests, setSpecialRequests] = useState('');
+
+  // Task 8 – Booking summary toggle
+  const [showSummary, setShowSummary] = useState(false);
 
   const [submitError, setSubmitError] = useState('');
 
@@ -106,8 +128,8 @@ export default function DestinationDetail() {
             };
           }
         }
-      } catch (error) {
-        console.error('Destination loading error:', error);
+      } catch {
+        // destination loading error — handled by empty state
       }
 
       setDestination(finalDestination);
@@ -139,7 +161,6 @@ export default function DestinationDetail() {
     );
 
     if (error) {
-      console.error('Guide loading error:', error);
       setSubmitError(
         'Unable to load verified guides. Please try again.'
       );
@@ -157,8 +178,11 @@ export default function DestinationDetail() {
 
   // Open guide modal
   const openGuideModal = async () => {
+    // Reset all form fields before opening
     setBookingSubmitted(false);
     setSubmitError('');
+    setSpecialRequests('');  // Task 7
+    setShowSummary(false);   // Task 8
     setIsGuideModalOpen(true);
 
     // Get logged-in user's profile information
@@ -191,72 +215,116 @@ export default function DestinationDetail() {
   const handleGuideBookingSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     setSubmitError('');
     setBookingSubmitted(false);
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    try {
+      const { data: { user }, error: authError } =
+        await supabase.auth.getUser();
 
-    if (!user) {
-      setSubmitError(
-        'Please login before submitting a booking.'
-      );
-      return;
-    }
+      if (authError) throw authError;
 
-    if (!selectedGuideId) {
-      setSubmitError(
-        'Please select a verified tour guide.'
-      );
-      return;
-    }
+      if (!user) {
+        setSubmitError('Please login before submitting a booking.');
+        return;
+      }
 
-    if (!destination?.name) {
-      setSubmitError(
-        'Destination information is missing.'
-      );
-      return;
-    }
+      if (!selectedGuideId) {
+        setSubmitError('Please select a verified tour guide.');
+        return;
+      }
 
-    const newBooking = {
-      traveler_id: user.id,
-      guide_id: selectedGuideId,
-      traveler_name: travelerName.trim(),
-      contact_phone: contactPhone.trim(),
-      destination_name: destination.name,
-      travel_date: travelDate,
-      headcount: parseInt(headcount, 10) || 2,
-      guide_type: guideType,
-      status: 'pending'
-    };
+      if (!destination?.name) {
+        setSubmitError('Destination information is missing.');
+        return;
+      }
 
-    const { error } = await supabase
-      .from('bookings')
-      .insert([newBooking]);
+      if (!travelerName.trim()) {
+  setSubmitError('Please enter your full name.');
+  return;
+}
 
-    if (error) {
-      console.error('Booking error:', error);
+if (!contactPhone.trim()) {
+  setSubmitError('Please enter your contact phone number.');
+  return;
+}
+
+if (!travelDate) {
+  setSubmitError('Please select your travel date.');
+  return;
+}
+
+      const today = new Date();
+      const todayString = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, '0'),
+        String(today.getDate()).padStart(2, '0')
+      ].join('-');
+
+      if (travelDate < todayString) {
+        setSubmitError('Travel date cannot be in the past.');
+        return;
+      }
+
+      const guestCount = Number(headcount);
+
+      if (
+        !Number.isInteger(guestCount) ||
+        guestCount < 1 ||
+        guestCount > 50
+      ) {
+        setSubmitError('Guest count must be between 1 and 50.');
+        return;
+      }
+
+      const newBooking = {
+        traveler_id: user.id,
+        guide_id: selectedGuideId,
+        traveler_name: travelerName.trim(),
+        contact_phone: contactPhone.trim(),
+        destination_name: destination.name,
+        destination_id: destination.id ?? null,
+        travel_date: travelDate,
+        headcount: guestCount,
+        guide_type: guideType,
+        special_requests: specialRequests.trim() || null,
+        status: 'pending',
+       
+      };
+
+      const { error } = await supabase
+        .from('bookings')
+        .insert([newBooking]);
+
+      if (error) throw error;
+
+      setBookingSubmitted(true);
+
+      setTimeout(() => {
+        setBookingSubmitted(false);
+        setIsGuideModalOpen(false);
+        setTravelerName('');
+        setContactPhone('');
+        setTravelDate('');
+        setHeadcount(1);
+        setSelectedGuideId('');
+        setSpecialRequests('');
+        setShowSummary(false);
+      }, 2500);
+
+    } catch (error) {
       setSubmitError(
         'Booking could not be submitted: ' +
-        error.message
+        (error.message || 'Unknown error')
       );
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setBookingSubmitted(true);
-
-    setTimeout(() => {
-      setBookingSubmitted(false);
-      setIsGuideModalOpen(false);
-
-      setTravelerName('');
-      setContactPhone('');
-      setTravelDate('');
-      setHeadcount(2);
-      setSelectedGuideId('');
-    }, 2500);
   };
+
 
   if (loading) {
     return (
@@ -590,7 +658,19 @@ export default function DestinationDetail() {
                     Connect with official SLTDA verified tour guides.
                   </p>
 
-                  {/* GUIDE SELECT */}
+                  {/* Task 3 – Destination pill (auto-filled, read-only) */}
+                  <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
+                    <MapPin size={15} className="text-emerald-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wide">Destination</p>
+                      <p className="text-sm text-white font-semibold truncate">{destination.name}</p>
+                    </div>
+                    {destination.id && (
+                      <span className="text-xs text-slate-500 font-mono flex-shrink-0">#{destination.id}</span>
+                    )}
+                  </div>
+
+                  {/* Task 4 – Guide selection */}
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">
                       Select Verified Tour Guide
@@ -650,7 +730,7 @@ export default function DestinationDetail() {
                     )} 
                   </div>
 
-                  {/* NAME */}
+                  {/* Task 2 – Traveler name (auto-filled from profile) */}
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">
                       Your Full Name
@@ -668,7 +748,7 @@ export default function DestinationDetail() {
                     />
                   </div>
 
-                  {/* PHONE */}
+                  {/* Task 2 – Contact phone (auto-filled from profile) */}
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">
                       Contact Phone / WhatsApp
@@ -686,22 +766,23 @@ export default function DestinationDetail() {
                     />
                   </div>
 
-                  {/* DATE + HEADCOUNT */}
+                  {/* Task 6 + Task 5 – Date picker & Guest count (stepper) */}
                   <div className="grid grid-cols-2 gap-3">
 
+                    {/* Task 6 – Travel date picker */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1">
-                        Travel Date
+                      <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
+                        <Calendar size={12} /> Travel Date
                       </label>
 
                       <input
                         type="date"
                         required
                         min={
-                          new Date()
-                            .toISOString()
-                            .split('T')[0]
-                        }
+  new Date(
+    Date.now() - new Date().getTimezoneOffset() * 60000
+  ).toISOString().split('T')[0]
+}
                         value={travelDate}
                         onChange={(e) =>
                           setTravelDate(e.target.value)
@@ -710,31 +791,35 @@ export default function DestinationDetail() {
                       />
                     </div>
 
+                    {/* Task 5 – Guest count stepper (not hardcoded) */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1">
-                        Guests Count
+                      <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
+                        <Users size={12} /> Guests
                       </label>
 
-                      <input
-                        type="number"
-                        min="1"
-                        required
-                        value={headcount}
-                        onChange={(e) =>
-                          setHeadcount(e.target.value)
-                        }
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                      />
+                      <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setHeadcount(h => Math.max(1, Number(h) - 1))}
+                          className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg flex items-center justify-center transition-all"
+                        >−</button>
+                        <span className="flex-1 text-center text-sm font-bold text-white">{headcount}</span>
+                        <button
+                          type="button"
+                          onClick={() => setHeadcount(h => Math.min(50, Number(h) + 1))}
+                          className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg flex items-center justify-center transition-all"
+                        >+</button>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 text-center">max 50</p>
                     </div>
 
                   </div>
 
-                  {/* GUIDE TYPE */}
+                  {/* Guide type */}
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1">
                       Preferred Guide Type
                     </label>
-
                     <select
                       value={guideType}
                       onChange={(e) =>
@@ -742,19 +827,63 @@ export default function DestinationDetail() {
                       }
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                     >
-                      <option>
-                        National Licensed Guide
-                      </option>
-
-                      <option>
-                        Chauffeur Guide
-                      </option>
-
-                      <option>
-                        Site Heritage Guide
-                      </option>
+                      <option>National Licensed Guide</option>
+                      <option>Chauffeur Guide</option>
+                      <option>Site Heritage Guide</option>
                     </select>
                   </div>
+
+                  {/* Task 7 – Special requests (optional) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
+                      <FileText size={12} /> Special Requests
+                      <span className="text-slate-500 font-normal ml-1">(optional)</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={specialRequests}
+                      onChange={e => setSpecialRequests(e.target.value)}
+                      placeholder="Wheelchair access, dietary needs, language preference, early start, etc."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 resize-none placeholder:text-slate-600"
+                    />
+                  </div>
+
+                  {/* Task 8 – Booking summary (collapsible, appears when key fields are filled) */}
+                  {selectedGuideId && travelDate && (
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 overflow-hidden">
+                      <button
+                        onClick={() => setShowSummary(s => !s)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-emerald-400 hover:bg-emerald-950/40 transition-all"
+                      >
+                        <span className="flex items-center gap-2">
+                          <ClipboardList size={14} />
+                          Booking Summary
+                        </span>
+                        {showSummary
+                          ? <ChevronUp size={14} />
+                          : <ChevronDown size={14} />
+                        }
+                      </button>
+
+                      {showSummary && (
+                        <div className="px-4 pb-4 space-y-2 text-xs text-slate-300 border-t border-emerald-500/20 pt-3">
+                          <SummaryRow label="Destination" value={destination.name} />
+                          <SummaryRow
+                            label="Guide"
+                            value={
+                              guides.find(g => g.id === selectedGuideId)?.full_name || selectedGuideId
+                            }
+                          />
+                          <SummaryRow label="Guide Type" value={guideType} />
+                          <SummaryRow label="Travel Date" value={travelDate} />
+                          <SummaryRow label="Guests" value={`${headcount} guest${headcount > 1 ? 's' : ''}`} />
+                          {travelerName && <SummaryRow label="Traveler" value={travelerName} />}
+                          {contactPhone && <SummaryRow label="Contact" value={contactPhone} />}
+                          {specialRequests && <SummaryRow label="Special Requests" value={specialRequests} />}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* ERROR */}
                   {submitError && (

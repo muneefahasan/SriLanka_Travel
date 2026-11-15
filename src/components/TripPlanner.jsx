@@ -23,15 +23,46 @@ export default function TripPlanner() {
     };
   }, [isFullscreenMap]);
 
-  const basePool = [
-    { location: "Kandy Sacred City", title: "Kandy Temple of Tooth & Botanical Gardens", desc: "Arrive at Kandy, visit Royal Botanical Gardens, Temple of Sacred Tooth Relic, and traditional Kandyan dance." },
-    { location: "Sigiriya Citadel", title: "Sigiriya Fortress & Minneriya Safari", desc: "Climb 5th-century Sigiriya Rock Fortress at sunrise, afternoon wild elephant safari at Minneriya." },
-    { location: "Ella Mountain Valley", title: "Nine Arches Bridge & Little Adam's Peak", desc: "Take iconic train trip to Ella, hike Little Adam's Peak for sunrise, visit Nine Arches Bridge." },
-    { location: "Galle Dutch Fort", title: "Galle 17th-Century Colonial Fort", desc: "Explore UNESCO fort lighthouse, cobblestone boutique streets, and ocean view ramparts." },
-    { location: "Jaffna Peninsula", title: "Jaffna Tamil Cultural Heritage", desc: "Visit Nallur Kandaswamy Kovil, Jaffna Dutch Fort, and try traditional Jaffna crab curry." },
-    { location: "Mirissa Palm Beach", title: "Mirissa Beach & Whale Watching", desc: "Golden palm beach sunset, morning blue whale watching cruise in deep ocean." },
-    { location: "Trincomalee Coast", title: "Trincomalee Nilaveli & Pigeon Island", desc: "Snorkeling at Pigeon Island national park, Koneswaram temple on Swami Rock cliff." }
-  ];
+  const stylePools = {
+    'Heritage & Nature': [
+      { location: "Kandy Sacred City", title: "Kandy Temple of Tooth & Botanical Gardens", desc: "Arrive at Kandy, visit Royal Botanical Gardens, Temple of Sacred Tooth Relic, and traditional Kandyan dance." },
+      { location: "Sigiriya Citadel", title: "Sigiriya Fortress & Dambulla Caves", desc: "Climb 5th-century Sigiriya Rock Fortress at sunrise, then explore the ancient Dambulla Cave Temple complex." },
+      { location: "Ella Mountain Valley", title: "Nine Arches Bridge & Little Adam's Peak", desc: "Take iconic train trip to Ella, hike Little Adam's Peak for sunrise, visit Nine Arches Bridge." },
+      { location: "Nuwara Eliya", title: "Tea Country & Gregory Lake", desc: "Explore lush tea plantations, enjoy a colonial-era tea tasting and a scenic walk around Gregory Lake." },
+      { location: "Polonnaruwa", title: "Ancient Polonnaruwa Ruins", desc: "Explore the ancient royal city ruins, Parakrama Samudra reservoir, and Gal Vihara rock temple." },
+      { location: "Galle Dutch Fort", title: "Galle 17th-Century Colonial Fort", desc: "Explore UNESCO fort lighthouse, cobblestone boutique streets, and ocean view ramparts." },
+      { location: "Jaffna Peninsula", title: "Jaffna Tamil Cultural Heritage", desc: "Visit Nallur Kandaswamy Kovil, Jaffna Dutch Fort, and try traditional Jaffna crab curry." },
+    ],
+    'Wildlife Safari': [
+      { location: "Yala National Park", title: "Yala Leopard & Elephant Jeep Safari", desc: "Dawn jeep safari into Yala, the world's highest leopard density park. Watch wild elephants at waterholes." },
+      { location: "Minneriya Reserve", title: "Minneriya Wild Elephant Gathering", desc: "Witness the famous 'Gathering' — hundreds of wild elephants meeting at Minneriya Tank each dry season." },
+      { location: "Udawalawe Park", title: "Udawalawe Elephant Transit Home", desc: "Visit Udawalawe Elephant Transit Home, then jeep safari to spot wild herds and water buffalo." },
+      { location: "Wilpattu Reserve", title: "Wilpattu Leopard & Sloth Bear Safari", desc: "Sri Lanka's largest national park — dense jungle trails, natural forest lakes (Villus) and rare wildlife sightings." },
+      { location: "Sigiriya Citadel", title: "Sigiriya & Minneriya Combo Day", desc: "Climb Sigiriya Rock Fortress in the morning, then afternoon wild elephant safari at Minneriya." },
+      { location: "Mirissa Coast", title: "Blue Whale Watching Cruise", desc: "Morning deep-sea blue whale and spinner dolphin watching cruise from Mirissa harbour." },
+      { location: "Bundala Wetlands", title: "Bundala Bird Watching Safari", desc: "Spot migratory flamingos, painted storks, and crocodiles in this UNESCO Ramsar wetland reserve." },
+    ],
+    'Beach & Surfing': [
+      { location: "Mirissa Palm Beach", title: "Mirissa Beach & Whale Watching", desc: "Golden palm beach sunset, morning blue whale watching cruise in deep ocean." },
+      { location: "Arugam Bay", title: "Arugam Bay World-Class Surf Point", desc: "Legendary Main Point surf break — consistent right-hand waves for all skill levels. Best June–October." },
+      { location: "Trincomalee Coast", title: "Trincomalee Nilaveli & Pigeon Island", desc: "Snorkeling at Pigeon Island national park reef, Koneswaram temple on dramatic Swami Rock cliff." },
+      { location: "Bentota Lagoon", title: "Bentota Water Sports & Madu River", desc: "Jet-skiing, banana boat rides, and a serene Madu River mangrove safari by traditional boat." },
+      { location: "Unawatuna Bay", title: "Unawatuna Snorkeling & Jungle Beach", desc: "Protected horseshoe bay perfect for snorkeling, SUP, and the secret walk to hidden Jungle Beach." },
+      { location: "Galle Dutch Fort", title: "Galle Fort Ramparts & Surf", desc: "Explore colonial ramparts, then surf at nearby Hikkaduwa reef or Jungle Beach break." },
+      { location: "Kalpitiya Lagoon", title: "Kalpitiya Kitesurfing & Dolphin Safari", desc: "World-class flat-water kitesurfing lagoon plus spinner dolphin and whale watching boat trips." },
+    ],
+    'Cultural Heritage': [
+      { location: "Kandy Sacred City", title: "Temple of Tooth Relic & Perahera", desc: "Sacred Tooth Relic temple evening puja ceremony, followed by traditional Kandyan cultural dance show." },
+      { location: "Anuradhapura", title: "Anuradhapura Sacred Ancient City", desc: "Explore 2,500-year-old Sri Maha Bodhi tree, Ruwanwelisaya stupa, and ancient palace ruins on bicycle." },
+      { location: "Polonnaruwa", title: "Polonnaruwa Medieval Royal City", desc: "UNESCO World Heritage medieval capital — Gal Vihara rock sculptures, Parakrama Samudra and royal baths." },
+      { location: "Dambulla Cave Temple", title: "Dambulla Golden Cave Temple", desc: "Five magnificent Buddhist cave temples with 80+ gilded statues and vast painted ceiling murals." },
+      { location: "Jaffna Peninsula", title: "Jaffna Nallur Kovil & Dutch Fort", desc: "Vibrant Nallur Kandaswamy Kovil Hindu temple, colonial Dutch Fort, and authentic Jaffna Tamil cuisine." },
+      { location: "Sigiriya Citadel", title: "Sigiriya Royal Rock Fortress", desc: "5th-century hydraulic gardens, lion's paw gateway, ancient frescoes, and 360° panoramic summit views." },
+      { location: "Galle Dutch Fort", title: "Galle UNESCO World Heritage Fort", desc: "Best-preserved 17th-century Dutch colonial fort in Asia — lighthouse, ramparts and boutique galleries." },
+    ]
+  };
+
+  const basePool = stylePools[style] || stylePools['Heritage & Nature'];
 
   const totalDays = Math.max(1, Math.min(14, Number(daysInput) || 1));
 
@@ -51,8 +82,7 @@ SRI LANKA TAILORED TRAVEL ITINERARY (${totalDays} DAYS)
 Style: ${style}
 =========================================\n\n` +
       generatedDaysPlan.map(d => `DAY ${d.day} - ${d.location.toUpperCase()}\nActivity: ${d.title}\nDetails: ${d.desc}\n\n`).join('') +
-      `-----------------------------------------\nGenerated by VisitCeylon AI Trip Planner`;
-
+     `-----------------------------------------\nGenerated by XplorSL AI Trip Planner`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

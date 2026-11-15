@@ -8,16 +8,15 @@ export default function Footer() {
           
           {/* Brand Section */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-emerald-600 text-white flex items-center justify-center rounded-xl font-black text-xl shadow-md">
-                SL
-              </div>
-              <span className="font-editorial font-extrabold text-2xl tracking-tight text-white">
-                Visit<span className="text-emerald-400">Ceylon</span>
-              </span>
-            </div>
+           <div className="flex items-center gap-3">
+ <div className="flex items-center">
+  <span className="font-editorial font-extrabold text-2xl tracking-tight text-white">
+    Xplor<span className="text-emerald-400">SL</span>
+  </span>
+</div>
+</div>
             <p className="text-sm leading-relaxed text-slate-400 font-medium">
-              Your ultimate guide to exploring the Pearl of the Indian Ocean. Discover hidden gems, book local guides, and plan your perfect Sri Lankan adventure.
+             Your ultimate guide to exploring Sri Lanka. Discover hidden gems, connect with verified local guides, and plan your perfect island adventure with XplorSL.
             </p>
           </div>
 
@@ -70,7 +69,7 @@ export default function Footer() {
 
         {/* Copyright Bar */}
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 font-bold">
-          <p>© 2026 VisitCeylon. All rights reserved.</p>
+         <p>© 2026 XplorSL. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>
